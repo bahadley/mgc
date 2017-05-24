@@ -40,9 +40,7 @@ def topology():
 
     net.plotGraph(max_x=200, max_y=200)
 
-    net.associationControl('ssf')
-
-    net.startMobility(time=0)
+    net.startMobility(time=0, AC='ssf') # Association Control = Strongest-Signal-First
     net.mobility(m1, 'start', time=1, position='86,188,0')
     net.mobility(m2, 'start', time=1, position='78,195,0')
     net.mobility(m1, 'stop', time=250, position='86,0,0')
