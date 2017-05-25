@@ -49,8 +49,7 @@ def topology():
     s1 = net.get('sta1')
     s2 = net.get('sta2')
     outfile = '/tmp/%s.out' % s2.name
-    errfile = '/tmp/%s.err' % s2.name
-    s2.cmd('./rcv.py > %s 2> %s &' % (outfile, errfile))
+    s2.cmd('./rcv.py 2>&1 > %s &' % outfile)
     sleep(1)
     s1.cmd('./send.py')
     sleep(1)
