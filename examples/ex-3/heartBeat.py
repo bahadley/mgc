@@ -73,12 +73,15 @@ def topology():
     print "*** Starting test..."
     s1 = net.get('sta1')
     s2 = net.get('sta2')
-    po2 = s2.popen('./rcv.py')
+    s3 = net.get('sta3')
+    po2 = s2.popen('./rcv.py', s2.IP(), '%s.out' % s2.name)
+    po3 = s3.popen('./rcv.py', s3.IP(), '%s.out' % s3.name)
     sleep(1)
     po1 = s1.popen('./send.py')
     sleep(5)
     po1.send_signal( SIGINT )
     po2.send_signal( SIGINT )
+    po3.send_signal( SIGINT )
     print "*** Ending test..."
 
     print "*** Running CLI"
