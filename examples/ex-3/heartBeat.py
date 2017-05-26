@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from time import sleep
+from signal import SIGINT
 
 from mininet.net import Mininet
 from mininet.node import Controller, OVSKernelAP
@@ -55,19 +56,29 @@ def topology():
 
     sleep(10)
 
+    """
     print "*** Starting test..."
     s1 = net.get('sta1')
     s2 = net.get('sta2')
-    s3 = net.get('sta3')
-    outfile2 = '/tmp/%s.out' % s2.name
-    outfile3 = '/tmp/%s.out' % s3.name
-    s2.cmd('./rcv.py 2>&1 > %s &' % outfile2)
-    s3.cmd('./rcv.py 2>&1 > %s &' % outfile3)
+    s2.sendCmd('./rcv.py')
     sleep(1)
-    s1.cmd('./send.py')
+    s1.sendCmd('./send.py')
     sleep(1)
+    s2.waitOutput()
+    s1.waitOutput()
     s1.cmd('kill %send.py')
     s2.cmd('kill %rcv.py')
+    print "*** Ending test..."
+    """
+    print "*** Starting test..."
+    s1 = net.get('sta1')
+    s2 = net.get('sta2')
+    po2 = s2.popen('./rcv.py')
+    sleep(1)
+    po1 = s1.popen('./send.py')
+    sleep(5)
+    po1.send_signal( SIGINT )
+    po2.send_signal( SIGINT )
     print "*** Ending test..."
 
     print "*** Running CLI"
