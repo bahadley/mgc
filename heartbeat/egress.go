@@ -57,13 +57,11 @@ func egress(addr string) {
 	for i := 0; i < hbs; i++ {
 		log.Trace.Printf("Tx(%s): %s", dstAddr, msg)
 
-		if !send {
-			continue
-		}
-
-		_, err = conn.Write(msg)
-		if err != nil {
-			log.Warning.Println(err.Error())
+		if send {
+			_, err = conn.Write(msg)
+			if err != nil {
+				log.Warning.Println(err.Error())
+			}
 		}
 
 		time.Sleep(delayInt * time.Millisecond)
