@@ -18,8 +18,8 @@ const (
 	envTransmit      = "MGC_TRANSMIT"
 	envTrace         = "MGC_TRACE"
 
-	defaultAddr          = "localhost"
-	defaultDstAddr       = "localhost"
+	defaultAddr          = "10.0.0.2"
+	defaultDstAddr       = "10.0.0.3,10.0.0.4"
 	defaultDstPort       = "22221"
 	defaultNumHeartbeats = 10
 	defaultDelayInt      = 1000
@@ -39,7 +39,7 @@ func Addr() string {
 func DstAddr() []string {
 	addr := os.Getenv(envDstAddr)
 	if len(addr) == 0 {
-		return []string{defaultDstAddr}
+		return strings.Split(defaultDstAddr, ",")
 	} else {
 		return strings.Split(addr, ",")
 	}
