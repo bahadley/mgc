@@ -18,8 +18,8 @@ const (
 	envTransmit      = "MGC_TRANSMIT"
 	envTrace         = "MGC_TRACE"
 
-	defaultAddr          = "10.0.0.2"
-	defaultDstAddr       = "10.0.0.3,10.0.0.4"
+	defaultAddr          = "localhost"
+	defaultDstAddr       = "localhost"
 	defaultDstPort       = "22221"
 	defaultNumHeartbeats = 10
 	defaultDelayInt      = 1000
