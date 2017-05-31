@@ -30,7 +30,7 @@ func Transmit() {
 
 func egress(dst string) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
-		dst+":"+DstPort())
+		dst+":"+config.DstPort())
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}
@@ -49,11 +49,11 @@ func egress(dst string) {
 	defer conn.Close()
 	defer wg.Done()
 
-	hbs := NumHeartbeats()
+	hbts := config.NumHeartbeats()
 	delayInt := DelayInterval()
 	msg := []byte("alive")
 
-	for i := 0; i < hbs; i++ {
+	for i := 0; i < hbts; i++ {
 		log.Trace.Printf("Tx(%s): %s", dstAddr, msg)
 
 		if send {

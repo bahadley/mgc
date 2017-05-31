@@ -4,6 +4,8 @@ import (
 	"flag"
 	"os"
 	"strings"
+
+	"github.com/bahadley/mgc/log"
 )
 
 const (
@@ -30,11 +32,21 @@ var (
 	Addr     string
 	DstAddrs []string
 
-	dsts string
+	dsts          string
+	dstPort       string
+	numHeartbeats int
 )
 
 func IsLeader() bool {
 	return Role == leaderFlag
+}
+
+func DstPort() string {
+	return dstPort
+}
+
+func NumHeartbeats() int {
+	return numHeartbeats
 }
 
 func Trace() bool {
@@ -49,15 +61,25 @@ func Trace() bool {
 func init() {
 	flag.StringVar(&Role, "role", leaderFlag, "Node role [L,F]")
 	flag.StringVar(&Addr, "addr", defaultAddr, "Node IP address")
-	flag.StringVar(&dsts, "dsts", defaultDstAddr, "Destination IP addresses")
+	flag.StringVar(&dsts, "dsts", defaultDstAddr, "Peer IP addresses")
+	flag.StringVar(&dstPort, "port", defaultDstPort, "Peer port number")
+	numHeartbeats = *(flag.Int("hbts", defaultNumHeartbeats, "Number of heartbeats"))
 	flag.Parse()
-	validate()
+	validateAll()
 }
 
-func validate() {
+func validateAll() {
 	parseDsts()
+	validateNumHeartbeats()
 }
 
 func parseDsts() {
 	DstAddrs = strings.Split(dsts, ",")
+}
+
+func validateNumHeartbeats() {
+	if numHeartbeats <= 0 {
+		log.Error.Fatalf("Invalid environment variable value: %s",
+			"hbts")
+	}
 }

@@ -1,11 +1,10 @@
 package log
 
 import (
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"os"
-
-	"github.com/bahadley/mgc/config"
+	//"github.com/bahadley/mgc/config"
 )
 
 var (
@@ -16,12 +15,14 @@ var (
 )
 
 func init() {
-	traceOut := ioutil.Discard
-	if config.Trace() {
-		traceOut = os.Stdout
-	}
+	/*
+		traceOut := ioutil.Discard
+		if config.Trace() {
+			traceOut = os.Stdout
+		}
+	*/
 
-	Trace = log.New(traceOut,
+	Trace = log.New(os.Stdout,
 		"TRACE: ",
 		log.Ldate|log.Lmicroseconds|log.Lshortfile)
 
