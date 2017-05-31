@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/heartbeat"
 	"github.com/bahadley/mgc/log"
 )
@@ -23,7 +24,9 @@ func main() {
 		os.Exit(0)
 	}()
 
-	heartbeat.Transmit()
+	if config.IsLeader() {
+		heartbeat.Transmit()
+	}
 
 	log.Info.Println("Shutting down ...")
 }

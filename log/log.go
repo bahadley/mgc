@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/bahadley/mgc/system"
+	"github.com/bahadley/mgc/config"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 func init() {
 	traceOut := ioutil.Discard
-	if system.Trace() {
+	if config.Trace() {
 		traceOut = os.Stdout
 	}
 

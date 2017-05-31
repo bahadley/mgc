@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 )
 
@@ -15,13 +16,11 @@ var (
 )
 
 func Transmit() {
-	//dsts := DstAddrs()
-
 	// Counting semaphore set to the number of addrs.
-	wg.Add(len(DstAddrs))
+	wg.Add(len(config.DstAddrs))
 
 	// Launch all threads.  Each thread has a different destination.
-	for _, dst := range DstAddrs {
+	for _, dst := range config.DstAddrs {
 		go egress(dst)
 	}
 
@@ -37,7 +36,7 @@ func egress(dst string) {
 	}
 
 	srcAddr, err := net.ResolveUDPAddr("udp",
-		Addr+":0")
+		config.Addr+":0")
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}
