@@ -1,10 +1,8 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/bahadley/mgc/heartbeat"
@@ -12,9 +10,6 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", "localhost", "host address (IPv4)")
-	dst := flag.String("dst", "localhost", "comma delimited list of destination addresses (IPv4)")
-	flag.Parse()
 	log.Info.Println("Starting up ...")
 
 	// Allow the node to be shut down gracefully.
@@ -28,7 +23,7 @@ func main() {
 		os.Exit(0)
 	}()
 
-	heartbeat.Transmit(*addr, strings.Split(*dst, ","))
+	heartbeat.Transmit()
 
 	log.Info.Println("Shutting down ...")
 }

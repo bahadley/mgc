@@ -78,7 +78,7 @@ def topology():
     po3 = s3.popen('./rcv.py', s3.IP(), '%s.out' % s3.name)
     sleep(1)
     po1 = s1.popen('../../mgc', '-addr=10.0.0.2', 
-      '-dst=10.0.0.3,10.0.0.4')
+      '-dsts=10.0.0.3,10.0.0.4')
     sleep(15)
     po1.send_signal( SIGINT )
     po2.send_signal( SIGINT )

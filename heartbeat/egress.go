@@ -14,22 +14,22 @@ var (
 	wg sync.WaitGroup
 )
 
-func Transmit(addr string, dsts []string) {
-	//addrs := DstAddr()
+func Transmit() {
+	//dsts := DstAddrs()
 
 	// Counting semaphore set to the number of addrs.
-	wg.Add(len(dsts))
+	wg.Add(len(DstAddrs))
 
 	// Launch all threads.  Each thread has a different destination.
-	for _, dst := range dsts {
-		go egress(addr, dst)
+	for _, dst := range DstAddrs {
+		go egress(dst)
 	}
 
 	// Wait for the threads to finish.
 	wg.Wait()
 }
 
-func egress(addr string, dst string) {
+func egress(dst string) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
 		dst+":"+DstPort())
 	if err != nil {
@@ -37,7 +37,7 @@ func egress(addr string, dst string) {
 	}
 
 	srcAddr, err := net.ResolveUDPAddr("udp",
-		addr+":0")
+		Addr+":0")
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}

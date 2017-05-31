@@ -1,6 +1,7 @@
 package heartbeat
 
 import (
+	"flag"
 	"os"
 	"strconv"
 	"strings"
@@ -27,22 +28,22 @@ const (
 	noTransmitFlag       = "NO"
 )
 
-func Addr() string {
-	addr := os.Getenv(envAddr)
-	if len(addr) == 0 {
-		return defaultAddr
-	} else {
-		return addr
-	}
+var (
+	Addr     string
+	DstAddrs []string
+
+	dsts string
+)
+
+func init() {
+	setAddr()
+	setDsts()
+	flag.Parse()
+	validate()
 }
 
-func DstAddr() []string {
-	addr := os.Getenv(envDstAddr)
-	if len(addr) == 0 {
-		return strings.Split(defaultDstAddr, ",")
-	} else {
-		return strings.Split(addr, ",")
-	}
+func validate() {
+	parseDsts()
 }
 
 func DstPort() string {
@@ -115,5 +116,21 @@ func Send() bool {
 		return false
 	} else {
 		return true
+	}
+}
+
+func setAddr() {
+	flag.StringVar(&Addr, "addr", "localhost", "host IP address")
+}
+
+func setDsts() {
+	flag.StringVar(&dsts, "dsts", "localhost", "destination IP addresses")
+}
+
+func parseDsts() {
+	if len(dsts) == 0 {
+		DstAddrs = strings.Split(defaultDstAddr, ",")
+	} else {
+		DstAddrs = strings.Split(dsts, ",")
 	}
 }
