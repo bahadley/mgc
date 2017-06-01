@@ -2,84 +2,103 @@ package config
 
 import (
 	"flag"
-	"os"
 	"strings"
+	"time"
 
 	"github.com/bahadley/mgc/log"
 )
 
 const (
-	envDstPort       = "MGC_DST_PORT"
-	envNumHeartbeats = "MGC_NUM_HEARTBEATS"
-	envDelayInt      = "MGC_DELAY_INTERVAL"
-	envTransmit      = "MGC_TRANSMIT"
-	envTrace         = "MGC_TRACE"
+	flagRole          = "role"
+	flagAddr          = "addr"
+	flagDsts          = "dsts"
+	flagDstPort       = "port"
+	flagNumHeartbeats = "hbts"
+	flagDelayInt      = "hbdelay"
+	flagTrace         = "trace"
 
-	leaderFlag     = "L"
-	followerFlog   = "F"
-	traceFlag      = "YES"
-	noTransmitFlag = "NO"
+	leaderFlag   = "L"
+	followerFlag = "F"
 
 	defaultAddr          = "localhost"
 	defaultDstAddr       = "localhost"
 	defaultDstPort       = "22221"
 	defaultNumHeartbeats = 10
 	defaultDelayInt      = 1000
+	defaultTrace         = true
 )
 
 var (
-	Role     string
-	Addr     string
-	DstAddrs []string
+	role          *string
+	addr          *string
+	dstAddrs      *string
+	dstPort       *string
+	numHeartbeats *int
+	delayInt      *int
 
-	dsts          string
-	dstPort       string
-	numHeartbeats int
+	trace *bool
 )
 
 func IsLeader() bool {
-	return Role == leaderFlag
+	return *role == leaderFlag
+}
+
+func IsFollow() bool {
+	return *role == followerFlag
+}
+
+func Addr() string {
+	return *addr
+}
+
+func DstAddrs() []string {
+	return strings.Split(*dstAddrs, ",")
 }
 
 func DstPort() string {
-	return dstPort
+	return *dstPort
 }
 
 func NumHeartbeats() int {
-	return numHeartbeats
+	return *numHeartbeats
 }
 
-func Trace() bool {
-	t := os.Getenv(envTrace)
-	if len(t) > 0 && strings.ToUpper(t) == traceFlag {
-		return true
-	} else {
-		return false
-	}
+func DelayInterval() time.Duration {
+	return time.Duration(*delayInt)
 }
 
 func init() {
-	flag.StringVar(&Role, "role", leaderFlag, "Node role [L,F]")
-	flag.StringVar(&Addr, "addr", defaultAddr, "Node IP address")
-	flag.StringVar(&dsts, "dsts", defaultDstAddr, "Peer IP addresses")
-	flag.StringVar(&dstPort, "port", defaultDstPort, "Peer port number")
-	numHeartbeats = *(flag.Int("hbts", defaultNumHeartbeats, "Number of heartbeats"))
+	setFlags()
 	flag.Parse()
 	validateAll()
+	log.SetTrace(*trace)
+}
+
+func setFlags() {
+	role = flag.String(flagRole, leaderFlag, "Node role [L,F]")
+	addr = flag.String(flagAddr, defaultAddr, "Node IP address")
+	dstAddrs = flag.String(flagDsts, defaultDstAddr, "Peer IP addresses")
+	dstPort = flag.String(flagDstPort, defaultDstPort, "Peer port number")
+	numHeartbeats = flag.Int(flagNumHeartbeats, defaultNumHeartbeats, "Number of heartbeats to transmit")
+	delayInt = flag.Int(flagDelayInt, defaultDelayInt, "Interval (ms) between heartbeats")
+	trace = flag.Bool("trace", false, "Turn on tracing")
 }
 
 func validateAll() {
-	parseDsts()
 	validateNumHeartbeats()
-}
-
-func parseDsts() {
-	DstAddrs = strings.Split(dsts, ",")
+	validateDelayInterval()
 }
 
 func validateNumHeartbeats() {
-	if numHeartbeats <= 0 {
+	if *numHeartbeats <= 0 {
 		log.Error.Fatalf("Invalid environment variable value: %s",
-			"hbts")
+			flagNumHeartbeats)
+	}
+}
+
+func validateDelayInterval() {
+	if *delayInt < 0 {
+		log.Error.Fatalf("Invalid environment variable value: %s",
+			flagDelayInt)
 	}
 }

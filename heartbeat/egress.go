@@ -10,17 +10,17 @@ import (
 )
 
 var (
-	send bool
-
 	wg sync.WaitGroup
 )
 
 func Transmit() {
+	dsts := config.DstAddrs()
+
 	// Counting semaphore set to the number of addrs.
-	wg.Add(len(config.DstAddrs))
+	wg.Add(len(dsts))
 
 	// Launch all threads.  Each thread has a different destination.
-	for _, dst := range config.DstAddrs {
+	for _, dst := range dsts {
 		go egress(dst)
 	}
 
@@ -36,7 +36,7 @@ func egress(dst string) {
 	}
 
 	srcAddr, err := net.ResolveUDPAddr("udp",
-		config.Addr+":0")
+		config.Addr()+":0")
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}
@@ -50,23 +50,17 @@ func egress(dst string) {
 	defer wg.Done()
 
 	hbts := config.NumHeartbeats()
-	delayInt := DelayInterval()
+	delayInt := config.DelayInterval()
 	msg := []byte("alive")
 
 	for i := 0; i < hbts; i++ {
 		log.Trace.Printf("Tx(%s): %s", dstAddr, msg)
 
-		if send {
-			_, err = conn.Write(msg)
-			if err != nil {
-				log.Warning.Println(err.Error())
-			}
+		_, err = conn.Write(msg)
+		if err != nil {
+			log.Warning.Println(err.Error())
 		}
 
 		time.Sleep(delayInt * time.Millisecond)
 	}
-}
-
-func init() {
-	send = Send()
 }

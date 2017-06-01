@@ -1,10 +1,9 @@
 package log
 
 import (
-	//"io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
-	//"github.com/bahadley/mgc/config"
 )
 
 var (
@@ -14,18 +13,18 @@ var (
 	Error   *log.Logger
 )
 
-func init() {
-	/*
-		traceOut := ioutil.Discard
-		if config.Trace() {
-			traceOut = os.Stdout
-		}
-	*/
+func SetTrace(trace bool) {
+	traceOut := ioutil.Discard
+	if trace {
+		traceOut = os.Stdout
+	}
 
-	Trace = log.New(os.Stdout,
+	Trace = log.New(traceOut,
 		"TRACE: ",
 		log.Ldate|log.Lmicroseconds|log.Lshortfile)
+}
 
+func init() {
 	Info = log.New(os.Stderr,
 		"INFO: ",
 		log.Ldate|log.Ltime)
