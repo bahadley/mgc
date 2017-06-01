@@ -5,7 +5,7 @@ from signal import SIGINT
 
 from mininet.cli import CLI
 from mininet.link import TCLink
-from mininet.log import setLogLevel, info
+from mininet.log import setLogLevel
 from mininet.net import Mininet
 from mininet.node import Controller, OVSKernelAP
 from mininet.util import pmonitor
