@@ -6,7 +6,7 @@ import (
 	"syscall"
 
 	"github.com/bahadley/mgc/config"
-	"github.com/bahadley/mgc/heartbeat"
+	"github.com/bahadley/mgc/leader"
 	"github.com/bahadley/mgc/log"
 )
 
@@ -25,7 +25,7 @@ func main() {
 	}()
 
 	if config.IsLeader() {
-		heartbeat.Transmit()
+		leader.Transmit()
 	}
 
 	log.Info.Println("Shutting down ...")
