@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/bahadley/mgc/config"
+	"github.com/bahadley/mgc/follower"
 	"github.com/bahadley/mgc/leader"
 	"github.com/bahadley/mgc/log"
 )
@@ -26,6 +27,9 @@ func main() {
 
 	if config.IsLeader() {
 		leader.Transmit()
+	} else if config.IsFollower() {
+		go follower.Output()
+		follower.Ingress()
 	}
 
 	log.Info.Println("Shutting down ...")

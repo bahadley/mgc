@@ -25,7 +25,7 @@ func SetTrace(trace bool) {
 }
 
 func init() {
-	Info = log.New(os.Stderr,
+	Info = log.New(os.Stdout,
 		"INFO: ",
 		log.Ldate|log.Ltime)
 

@@ -43,7 +43,7 @@ func IsLeader() bool {
 	return *role == leaderFlag
 }
 
-func IsFollow() bool {
+func IsFollower() bool {
 	return *role == followerFlag
 }
 
