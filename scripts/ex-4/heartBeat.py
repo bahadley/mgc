@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
-from time import sleep
+from time import sleep, time
 from signal import SIGINT
 
+from mininet.cli import CLI
+from mininet.link import TCLink
+from mininet.log import setLogLevel, info
 from mininet.net import Mininet
 from mininet.node import Controller, OVSKernelAP
-from mininet.link import TCLink
-from mininet.cli import CLI
-from mininet.log import setLogLevel
+from mininet.util import pmonitor
 
 def topology():
     "Create a network."
@@ -56,33 +57,33 @@ def topology():
 
     sleep(10)
 
-    """
-    print "*** Starting test..."
-    s1 = net.get('sta1')
-    s2 = net.get('sta2')
-    s2.sendCmd('./rcv.py')
-    sleep(1)
-    s1.sendCmd('./send.py')
-    sleep(1)
-    s2.waitOutput()
-    s1.waitOutput()
-    s1.cmd('kill %send.py')
-    s2.cmd('kill %rcv.py')
-    print "*** Ending test..."
-    """
     print "*** Starting test..."
     s1 = net.get('sta1')
     s2 = net.get('sta2')
     s3 = net.get('sta3')
-    po2 = s2.popen('./rcv.py', s2.IP(), '%s.out' % s2.name)
-    po3 = s3.popen('./rcv.py', s3.IP(), '%s.out' % s3.name)
+
+    popens = {}
+    popens[s2] = s2.popen('../../mgc', '-role=F', 
+      '-addr=%s' % s2.IP())
+    popens[s3] = s3.popen('../../mgc', '-role=F', 
+      '-addr=%s' % s3.IP())
+
     sleep(1)
-    po1 = s1.popen('../../mgc', '-addr=10.0.0.2', 
+    leader = s1.popen('../../mgc', '-addr=10.0.0.2', 
       '-dsts=10.0.0.3,10.0.0.4')
-    sleep(15)
-    po1.send_signal( SIGINT )
-    po2.send_signal( SIGINT )
-    po3.send_signal( SIGINT )
+
+    endTime = time() + 15 
+    with open('/tmp/mgc.out', 'w') as f:
+      for h, line in pmonitor(popens, timeoutms=500):
+        if h:
+          f.write('<%s>: %s' % (h.name, line))
+        if time() >= endTime:
+          leader.send_signal( SIGINT )
+          popens[s2].send_signal( SIGINT )
+          popens[s3].send_signal( SIGINT )
+
+    f.close()
+
     print "*** Ending test..."
 
     print "*** Running CLI"

@@ -49,6 +49,6 @@ func Output() {
 
 	for {
 		hb := <-outputChan
-		fmt.Println(hb)
+		log.Info.Println(hb)
 	}
 }
