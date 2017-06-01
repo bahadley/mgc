@@ -10,6 +10,10 @@ from mininet.net import Mininet
 from mininet.node import Controller, OVSKernelAP
 from mininet.util import pmonitor
 
+OUTPUT_FILE = '/tmp/mgc.out'
+EXPERIMENT_DURATION = 15
+EXECUTABLE_PATH = '../../mgc'
+
 def topology():
     "Create a network."
     net = Mininet(controller=Controller, link=TCLink, accessPoint=OVSKernelAP)
@@ -57,23 +61,23 @@ def topology():
 
     sleep(10)
 
-    print "*** Starting test..."
+    print "*** Starting experiment..."
     s1 = net.get('sta1')
     s2 = net.get('sta2')
     s3 = net.get('sta3')
 
     popens = {}
-    popens[s2] = s2.popen('../../mgc', '-role=F', 
+    popens[s2] = s2.popen(EXECUTABLE_PATH, '-role=F', 
       '-addr=%s' % s2.IP())
-    popens[s3] = s3.popen('../../mgc', '-role=F', 
+    popens[s3] = s3.popen(EXECUTABLE_PATH, '-role=F', 
       '-addr=%s' % s3.IP())
 
     sleep(1)
-    leader = s1.popen('../../mgc', '-addr=10.0.0.2', 
-      '-dsts=10.0.0.3,10.0.0.4')
+    leader = s1.popen(EXECUTABLE_PATH, '-addr=%s' % s1.IP(), 
+      '-dsts=%s,%s' % (s2.IP(), s3.IP()))
 
-    endTime = time() + 15 
-    with open('/tmp/mgc.out', 'w') as f:
+    endTime = time() + EXPERIMENT_DURATION 
+    with open(OUTPUT_FILE, 'w') as f:
       for h, line in pmonitor(popens, timeoutms=500):
         if h:
           f.write('<%s>: %s' % (h.name, line))
@@ -84,7 +88,7 @@ def topology():
 
     f.close()
 
-    print "*** Ending test..."
+    print "*** Ending experiment..."
 
     print "*** Running CLI"
     CLI(net)

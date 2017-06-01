@@ -30,7 +30,7 @@ func Transmit() {
 
 func egress(dst string) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
-		dst+":"+config.DstPort())
+		dst+":"+config.Port())
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}

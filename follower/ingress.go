@@ -15,7 +15,7 @@ var (
 
 func Ingress() {
 	srcAddr, err := net.ResolveUDPAddr("udp",
-		config.Addr()+":"+config.DstPort())
+		config.Addr()+":"+config.Port())
 	if err != nil {
 		log.Error.Fatal(err.Error())
 	}
@@ -30,7 +30,7 @@ func Ingress() {
 	log.Info.Printf("Listening for heartbeats (%s UDP) ...",
 		srcAddr.String())
 
-	buf := make([]byte, 128, 1024)
+	buf := make([]byte, config.TupleBufLen(), config.TupleBufCap())
 	for {
 		n, caddr, err := conn.ReadFromUDP(buf)
 		if err != nil {
@@ -40,12 +40,12 @@ func Ingress() {
 
 		t := time.Now().UnixNano()
 		log.Trace.Printf("Rx(%s): %s", caddr, buf[0:n])
-		outputChan <- fmt.Sprintf("time (ns): %d, msg: %s", t, buf[0:n])
+		outputChan <- fmt.Sprintf("Rcvd heartbeat: time (ns): %d, msg: %s", t, buf[0:n])
 	}
 }
 
 func Output() {
-	outputChan = make(chan string, 10)
+	outputChan = make(chan string, config.ChannelBufSz())
 
 	for {
 		hb := <-outputChan

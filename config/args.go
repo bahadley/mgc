@@ -12,7 +12,7 @@ const (
 	flagRole          = "role"
 	flagAddr          = "addr"
 	flagDsts          = "dsts"
-	flagDstPort       = "port"
+	flagPort          = "port"
 	flagNumHeartbeats = "hbts"
 	flagDelayInt      = "hbdelay"
 	flagTrace         = "trace"
@@ -22,7 +22,7 @@ const (
 
 	defaultAddr          = "localhost"
 	defaultDstAddr       = "localhost"
-	defaultDstPort       = "22221"
+	defaultPort          = "22221"
 	defaultNumHeartbeats = 10
 	defaultDelayInt      = 1000
 	defaultTrace         = true
@@ -32,7 +32,7 @@ var (
 	role          *string
 	addr          *string
 	dstAddrs      *string
-	dstPort       *string
+	port          *string
 	numHeartbeats *int
 	delayInt      *int
 
@@ -55,8 +55,8 @@ func DstAddrs() []string {
 	return strings.Split(*dstAddrs, ",")
 }
 
-func DstPort() string {
-	return *dstPort
+func Port() string {
+	return *port
 }
 
 func NumHeartbeats() int {
@@ -78,7 +78,7 @@ func setFlags() {
 	role = flag.String(flagRole, leaderFlag, "Node role [L,F]")
 	addr = flag.String(flagAddr, defaultAddr, "Node IP address")
 	dstAddrs = flag.String(flagDsts, defaultDstAddr, "Peer IP addresses")
-	dstPort = flag.String(flagDstPort, defaultDstPort, "Peer port number")
+	port = flag.String(flagPort, defaultPort, "Peer port number")
 	numHeartbeats = flag.Int(flagNumHeartbeats, defaultNumHeartbeats, "Number of heartbeats to transmit")
 	delayInt = flag.Int(flagDelayInt, defaultDelayInt, "Interval (ms) between heartbeats")
 	trace = flag.Bool("trace", false, "Turn on tracing")
