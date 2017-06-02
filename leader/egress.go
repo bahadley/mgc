@@ -2,6 +2,7 @@ package leader
 
 import (
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -51,9 +52,10 @@ func egress(dst string) {
 
 	hbts := config.NumHeartbeats()
 	delayInt := config.DelayInterval()
-	msg := []byte("alive")
+	//msg := []byte("alive")
 
 	for i := 0; i < hbts; i++ {
+		msg := []byte(strconv.Itoa(i))
 		log.Trace.Printf("Tx(%s): %s", dstAddr, msg)
 
 		_, err = conn.Write(msg)

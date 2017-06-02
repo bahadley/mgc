@@ -40,7 +40,7 @@ func Ingress() {
 
 		t := time.Now().UnixNano()
 		log.Trace.Printf("Rx(%s): %s", caddr, buf[0:n])
-		outputChan <- fmt.Sprintf("Rcvd heartbeat: time (ns): %d, msg: %s", t, buf[0:n])
+		outputChan <- fmt.Sprintf("Rcvd heartbeat: time (ns): %d, seqno: %s", t, buf[0:n])
 	}
 }
 
