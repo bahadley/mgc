@@ -6,35 +6,35 @@ import (
 )
 
 type (
-	Heartbeat struct {
-		Src         string
-		SeqNo       int32
-		ArrivalTime int64
+	heartbeat struct {
+		src         string
+		seqNo       string
+		arrivalTime int64
 	}
 )
 
 var (
-	HeartbeatChan chan *Heartbeat
-    printChan chan *Heartbeat 
+	heartbeatChan chan *heartbeat
+	printChan     chan *heartbeat
 )
 
 func IngestHeartbeats() {
 	for {
-		hb := <-HeartbeatChan
-        printChan <- hb 
+		hb := <-heartbeatChan
+		printChan <- hb
 	}
 }
 
 func Print() {
-    printChan = make(chan *Heartbeat, config.ChannelBufSz())
+	printChan = make(chan *heartbeat, config.ChannelBufSz())
 
-    for {
-        hb := <-printChan
-        log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %s", 
-            hb.ArrivalTime, hb.SeqNo)
-    }
+	for {
+		hb := <-printChan
+		log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %s",
+			hb.arrivalTime, hb.seqNo)
+	}
 }
 
 func init() {
-	HeartbeatChan = make(chan *Heartbeat, config.ChannelBufSz())
+	heartbeatChan = make(chan *heartbeat, config.ChannelBufSz())
 }

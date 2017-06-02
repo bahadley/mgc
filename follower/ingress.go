@@ -1,16 +1,11 @@
 package follower
 
 import (
-	"fmt"
 	"net"
 	"time"
 
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
-)
-
-var (
-	outputChan chan string
 )
 
 func Ingress() {
@@ -38,17 +33,11 @@ func Ingress() {
 			continue
 		}
 
-		t := time.Now().UnixNano()
+		heartbeatChan <- &heartbeat{
+			src:         caddr.String(),
+			seqNo:       string(buf[0:n]),
+			arrivalTime: time.Now().UnixNano()}
+
 		log.Trace.Printf("Rx(%s): %s", caddr, buf[0:n])
-		outputChan <- fmt.Sprintf("Rcvd heartbeat: time (ns): %d, seqno: %s", t, buf[0:n])
-	}
-}
-
-func Output() {
-	outputChan = make(chan string, config.ChannelBufSz())
-
-	for {
-		hb := <-outputChan
-		log.Info.Println(hb)
 	}
 }
