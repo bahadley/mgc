@@ -1,8 +1,9 @@
 package leader
 
 import (
+	"bytes"
+	"encoding/binary"
 	"net"
-	"strconv"
 	"sync"
 	"time"
 
@@ -52,17 +53,23 @@ func egress(dst string) {
 
 	hbts := config.NumHeartbeats()
 	delayInt := config.DelayInterval()
-	//msg := []byte("alive")
+	var seqNo uint16 = 0
 
 	for i := 0; i < hbts; i++ {
-		msg := []byte(strconv.Itoa(i))
-		log.Trace.Printf("Tx(%s): %s", dstAddr, msg)
+		buf := new(bytes.Buffer)
+		err := binary.Write(buf, binary.LittleEndian, seqNo)
+		if err != nil {
+			log.Error.Fatal(err.Error())
+		}
 
-		_, err = conn.Write(msg)
+		log.Trace.Printf("Tx(%s): % x", dstAddr, buf.Bytes())
+
+		_, err = conn.Write(buf.Bytes())
 		if err != nil {
 			log.Warning.Println(err.Error())
 		}
 
+		seqNo++
 		time.Sleep(delayInt * time.Millisecond)
 	}
 }

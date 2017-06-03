@@ -1,6 +1,8 @@
 package follower
 
 import (
+	"bytes"
+	"encoding/binary"
 	"net"
 	"time"
 
@@ -26,6 +28,7 @@ func Ingress() {
 		srcAddr.String())
 
 	buf := make([]byte, config.TupleBufLen(), config.TupleBufCap())
+	var seqNo uint16
 	for {
 		n, caddr, err := conn.ReadFromUDP(buf)
 		if err != nil {
@@ -33,11 +36,17 @@ func Ingress() {
 			continue
 		}
 
+		seqNoBuf := bytes.NewReader(buf)
+		err = binary.Read(seqNoBuf, binary.LittleEndian, &seqNo)
+		if err != nil {
+			log.Error.Fatal(err.Error())
+		}
+
 		heartbeatChan <- &heartbeat{
 			src:         caddr.String(),
-			seqNo:       string(buf[0:n]),
-			arrivalTime: time.Now().UnixNano()}
+			seqNo:       seqNo,
+			arrivalTime: time.Now()}
 
-		log.Trace.Printf("Rx(%s): %s", caddr, buf[0:n])
+		log.Trace.Printf("Rx(%s): % x", caddr, buf[0:n])
 	}
 }

@@ -1,6 +1,8 @@
 package follower
 
 import (
+	"time"
+
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 )
@@ -8,8 +10,8 @@ import (
 type (
 	heartbeat struct {
 		src         string
-		seqNo       string
-		arrivalTime int64
+		seqNo       uint16
+		arrivalTime time.Time
 	}
 )
 
@@ -30,8 +32,8 @@ func Print() {
 
 	for {
 		hb := <-printChan
-		log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %s",
-			hb.arrivalTime, hb.seqNo)
+		log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
+			hb.arrivalTime.UnixNano(), hb.seqNo)
 	}
 }
 
