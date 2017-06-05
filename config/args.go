@@ -15,6 +15,7 @@ const (
 	flagPort          = "port"
 	flagNumHeartbeats = "hbts"
 	flagDelayInt      = "hbdelay"
+	flagStart         = "start"
 	flagTrace         = "trace"
 
 	leaderFlag   = "L"
@@ -25,6 +26,7 @@ const (
 	defaultPort          = "22221"
 	defaultNumHeartbeats = 10
 	defaultDelayInt      = 1000
+	defaultStart         = 0
 	defaultTrace         = true
 )
 
@@ -35,6 +37,7 @@ var (
 	port          *string
 	numHeartbeats *int
 	delayInt      *int
+	start         *int64
 
 	trace *bool
 )
@@ -67,6 +70,10 @@ func DelayInterval() time.Duration {
 	return time.Duration(*delayInt)
 }
 
+func Start() time.Time {
+	return time.Unix(*start, 0)
+}
+
 func init() {
 	setFlags()
 	flag.Parse()
@@ -81,6 +88,7 @@ func setFlags() {
 	port = flag.String(flagPort, defaultPort, "Peer port number")
 	numHeartbeats = flag.Int(flagNumHeartbeats, defaultNumHeartbeats, "Number of heartbeats to transmit")
 	delayInt = flag.Int(flagDelayInt, defaultDelayInt, "Interval (ms) between heartbeats")
+	start = flag.Int64(flagStart, defaultStart, "Unix epoch start time for heartbeat regime")
 	trace = flag.Bool("trace", false, "Turn on tracing")
 }
 
@@ -100,5 +108,12 @@ func validateDelayInterval() {
 	if *delayInt < 0 {
 		log.Error.Fatalf("Invalid environment variable value: %s",
 			flagDelayInt)
+	}
+}
+
+func validateStart() {
+	if *start < 0 {
+		log.Error.Fatalf("Invalid environment variable value: %s",
+			flagStart)
 	}
 }

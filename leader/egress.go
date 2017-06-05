@@ -55,6 +55,9 @@ func egress(dst string) {
 	delayInt := config.DelayInterval()
 	var seqNo uint16 = 0
 
+	timer := time.NewTimer((config.Start()).Sub(time.Now()))
+	<-timer.C
+
 	for i := 0; i < hbts; i++ {
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.LittleEndian, seqNo)

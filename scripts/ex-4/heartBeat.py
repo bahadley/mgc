@@ -11,6 +11,7 @@ from mininet.node import Controller, OVSKernelAP
 from mininet.util import pmonitor
 
 OUTPUT_FILE = '/tmp/mgc.out'
+SYNC_START = 10
 EXPERIMENT_DURATION = 15
 EXECUTABLE_PATH = '../../mgc'
 
@@ -61,22 +62,23 @@ def topology():
 
     sleep(10)
 
-    print "*** Starting experiment..."
     s1 = net.get('sta1')
     s2 = net.get('sta2')
     s3 = net.get('sta3')
-
     popens = {}
+    startTime = int(time()) + SYNC_START
+    endTime = startTime + EXPERIMENT_DURATION 
+
+    print "*** Starting %d second experiment in %d second(s) - at %d Unix time..." % (
+      EXPERIMENT_DURATION, (startTime - int(time())), startTime)
+
     popens[s2] = s2.popen(EXECUTABLE_PATH, '-role=F', 
       '-addr=%s' % s2.IP())
     popens[s3] = s3.popen(EXECUTABLE_PATH, '-role=F', 
       '-addr=%s' % s3.IP())
-
-    sleep(1)
     leader = s1.popen(EXECUTABLE_PATH, '-addr=%s' % s1.IP(), 
-      '-dsts=%s,%s' % (s2.IP(), s3.IP()))
+      '-dsts=%s,%s' % (s2.IP(), s3.IP()), '-start=%d' % startTime)
 
-    endTime = time() + EXPERIMENT_DURATION 
     with open(OUTPUT_FILE, 'w') as f:
       for h, line in pmonitor(popens, timeoutms=500):
         if h:
