@@ -69,7 +69,7 @@ def topology():
     startTime = int(time()) + SYNC_START
     endTime = startTime + EXPERIMENT_DURATION 
 
-    print "*** Starting %d second experiment in %d second(s) - at %d Unix time..." % (
+    print "*** Starting %d second experiment in %d second(s) - at Unix epoch: %d..." % (
       EXPERIMENT_DURATION, (startTime - int(time())), startTime)
 
     popens[s2] = s2.popen(EXECUTABLE_PATH, '-role=F', 
@@ -78,6 +78,7 @@ def topology():
       '-addr=%s' % s3.IP())
     leader = s1.popen(EXECUTABLE_PATH, '-addr=%s' % s1.IP(), 
       '-dsts=%s,%s' % (s2.IP(), s3.IP()), '-start=%d' % startTime)
+    popens[s1] = leader
 
     with open(OUTPUT_FILE, 'w') as f:
       for h, line in pmonitor(popens, timeoutms=500):

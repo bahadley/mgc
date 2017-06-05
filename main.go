@@ -26,7 +26,8 @@ func main() {
 	}()
 
 	if config.IsLeader() {
-		leader.Transmit()
+		go leader.Print()
+		leader.PushHeartbeats()
 	} else if config.IsFollower() {
 		go follower.IngestHeartbeats()
 		go follower.Print()

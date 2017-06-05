@@ -4,33 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 )
 
-var (
-	wg sync.WaitGroup
-)
-
-func Transmit() {
-	dsts := config.DstAddrs()
-
-	// Counting semaphore set to the number of addrs.
-	wg.Add(len(dsts))
-
-	// Launch all threads.  Each thread has a different destination.
-	for _, dst := range dsts {
-		go egress(dst)
-	}
-
-	// Wait for the threads to finish.
-	wg.Wait()
-}
-
-func egress(dst string) {
+func Egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
 		dst+":"+config.Port())
 	if err != nil {
@@ -49,18 +29,12 @@ func egress(dst string) {
 	}
 
 	defer conn.Close()
-	defer wg.Done()
 
-	hbts := config.NumHeartbeats()
-	delayInt := config.DelayInterval()
-	var seqNo uint16 = 0
+	for {
+		hb := <-input
 
-	timer := time.NewTimer((config.Start()).Sub(time.Now()))
-	<-timer.C
-
-	for i := 0; i < hbts; i++ {
 		buf := new(bytes.Buffer)
-		err := binary.Write(buf, binary.LittleEndian, seqNo)
+		err := binary.Write(buf, binary.LittleEndian, hb.seqNo)
 		if err != nil {
 			log.Error.Fatal(err.Error())
 		}
@@ -72,7 +46,7 @@ func egress(dst string) {
 			log.Warning.Println(err.Error())
 		}
 
-		seqNo++
-		time.Sleep(delayInt * time.Millisecond)
+		hb.transmitTime = time.Now()
+		output <- hb
 	}
 }
