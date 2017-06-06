@@ -43,18 +43,15 @@ func pushToFollower(dst string) {
 
 	go Egress(dst, heartbeatChan, printChan)
 
-	//hbts := config.NumHeartbeats()
-	delayInt := config.DelayInterval()
-	var seqNo uint16 = 0
-
 	timer := time.NewTimer((config.Start()).Sub(time.Now()))
 	<-timer.C
 
-	//for i := 0; i < hbts; i++ {
-	for {
+	var seqNo uint16 = 0
+
+	ticker := time.NewTicker(time.Millisecond * config.DelayInterval())
+	for range ticker.C {
 		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
 		seqNo++
-		time.Sleep(delayInt * time.Millisecond)
 	}
 
 }
