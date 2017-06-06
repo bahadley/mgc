@@ -9,35 +9,32 @@ import (
 )
 
 const (
-	flagRole          = "role"
-	flagAddr          = "addr"
-	flagDsts          = "dsts"
-	flagPort          = "port"
-	flagNumHeartbeats = "hbts"
-	flagDelayInt      = "hbdelay"
-	flagStart         = "start"
-	flagTrace         = "trace"
+	flagRole     = "role"
+	flagAddr     = "addr"
+	flagDsts     = "dsts"
+	flagPort     = "port"
+	flagDelayInt = "hbdelay"
+	flagStart    = "start"
+	flagTrace    = "trace"
 
-	leaderFlag   = "L"
-	followerFlag = "F"
+	leaderFlag   = "l"
+	followerFlag = "f"
 
-	defaultAddr          = "localhost"
-	defaultDstAddr       = "localhost"
-	defaultPort          = "22221"
-	defaultNumHeartbeats = 10
-	defaultDelayInt      = 1000
-	defaultStart         = 0
-	defaultTrace         = true
+	defaultAddr     = "localhost"
+	defaultDstAddr  = "localhost"
+	defaultPort     = "22221"
+	defaultDelayInt = 1000
+	defaultStart    = 0
+	defaultTrace    = true
 )
 
 var (
-	role          *string
-	addr          *string
-	dstAddrs      *string
-	port          *string
-	numHeartbeats *int
-	delayInt      *int
-	start         *int64
+	role     *string
+	addr     *string
+	dstAddrs *string
+	port     *string
+	delayInt *int
+	start    *int64
 
 	trace *bool
 )
@@ -62,10 +59,6 @@ func Port() string {
 	return *port
 }
 
-func NumHeartbeats() int {
-	return *numHeartbeats
-}
-
 func DelayInterval() time.Duration {
 	return time.Duration(*delayInt)
 }
@@ -82,25 +75,25 @@ func init() {
 }
 
 func setFlags() {
-	role = flag.String(flagRole, leaderFlag, "Node role [L,F]")
+	role = flag.String(flagRole, leaderFlag, "Node role [(l)eader,(f)ollower]")
 	addr = flag.String(flagAddr, defaultAddr, "Node IP address")
 	dstAddrs = flag.String(flagDsts, defaultDstAddr, "Peer IP addresses")
 	port = flag.String(flagPort, defaultPort, "Peer port number")
-	numHeartbeats = flag.Int(flagNumHeartbeats, defaultNumHeartbeats, "Number of heartbeats to transmit")
 	delayInt = flag.Int(flagDelayInt, defaultDelayInt, "Interval (ms) between heartbeats")
 	start = flag.Int64(flagStart, defaultStart, "Unix epoch start time for heartbeat regime")
 	trace = flag.Bool("trace", false, "Turn on tracing")
 }
 
 func validateAll() {
-	validateNumHeartbeats()
+	validateRole()
 	validateDelayInterval()
+	validateStart()
 }
 
-func validateNumHeartbeats() {
-	if *numHeartbeats <= 0 {
+func validateRole() {
+	if *role != leaderFlag && *role != followerFlag {
 		log.Error.Fatalf("Invalid environment variable value: %s",
-			flagNumHeartbeats)
+			flagRole)
 	}
 }
 
