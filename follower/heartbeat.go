@@ -23,7 +23,14 @@ var (
 func IngestHeartbeats() {
 	for {
 		hb := <-heartbeatChan
+
 		printChan <- hb
+
+		inserted := insert(hb)
+		if !inserted {
+			log.Warning.Printf("Heartbeat rcvd at %s from %s with seqNo %d not inserted",
+				hb.arrivalTime, hb.src, hb.seqNo)
+		}
 	}
 }
 
