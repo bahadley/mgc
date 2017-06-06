@@ -41,7 +41,7 @@ func PushHeartbeats() {
 func pushToFollower(dst string) {
 	defer wg.Done()
 
-	go Egress(dst, heartbeatChan, printChan)
+	go egress(dst, heartbeatChan, printChan)
 
 	timer := time.NewTimer((config.Start()).Sub(time.Now()))
 	<-timer.C

@@ -10,7 +10,7 @@ import (
 	"github.com/bahadley/mgc/log"
 )
 
-func Egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
+func egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
 		dst+":"+config.Port())
 	if err != nil {
