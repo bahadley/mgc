@@ -25,8 +25,6 @@ var (
 )
 
 func PushHeartbeats() {
-	heartbeatChan = make(chan *Heartbeat)
-
 	dsts := config.DstAddrs()
 
 	// Counting semaphore set to the number of addrs.
@@ -42,8 +40,6 @@ func PushHeartbeats() {
 }
 
 func Print() {
-	printChan = make(chan *Heartbeat, config.ChannelBufSz())
-
 	for {
 		hb := <-printChan
 		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
@@ -58,10 +54,10 @@ func pushToFollower(dst string) {
 
 	var seqNo uint16 = 0
 
+	ticker := time.NewTicker(durationOfHeartbeatInterval())
 	timer := time.NewTimer(durationToRegimeStart())
 	<-timer.C
 
-	ticker := time.NewTicker(durationOfHeartbeatInterval())
 	for range ticker.C {
 		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
 		seqNo++
@@ -78,4 +74,9 @@ func durationOfHeartbeatInterval() time.Duration {
 		log.Error.Fatal(err.Error())
 	}
 	return d
+}
+
+func init() {
+	heartbeatChan = make(chan *Heartbeat)
+	printChan = make(chan *Heartbeat, config.ChannelBufSz())
 }

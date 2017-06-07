@@ -21,8 +21,6 @@ var (
 )
 
 func IngestHeartbeats() {
-	heartbeatChan = make(chan *heartbeat, config.ChannelBufSz())
-
 	for {
 		hb := <-heartbeatChan
 
@@ -37,11 +35,14 @@ func IngestHeartbeats() {
 }
 
 func Print() {
-	printChan = make(chan *heartbeat, config.ChannelBufSz())
-
 	for {
 		hb := <-printChan
 		log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
 			hb.arrivalTime.UnixNano(), hb.seqNo)
 	}
+}
+
+func init() {
+	heartbeatChan = make(chan *heartbeat, config.ChannelBufSz())
+	printChan = make(chan *heartbeat, config.ChannelBufSz())
 }

@@ -40,13 +40,12 @@ func egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
 		}
 
 		log.Trace.Printf("Tx(%s): % x", dstAddr, buf.Bytes())
+		hb.transmitTime = time.Now()
+		output <- hb
 
 		_, err = conn.Write(buf.Bytes())
 		if err != nil {
 			log.Warning.Println(err.Error())
 		}
-
-		hb.transmitTime = time.Now()
-		output <- hb
 	}
 }
