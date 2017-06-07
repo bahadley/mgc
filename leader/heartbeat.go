@@ -1,12 +1,12 @@
 package leader
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
+	"github.com/bahadley/mgc/util"
 )
 
 type (
@@ -54,26 +54,14 @@ func pushToFollower(dst string) {
 
 	var seqNo uint16 = 0
 
-	ticker := time.NewTicker(durationOfHeartbeatInterval())
-	timer := time.NewTimer(durationToRegimeStart())
+	ticker := time.NewTicker(util.DurationOfHeartbeatInterval())
+	timer := time.NewTimer(util.DurationToRegimeStart())
 	<-timer.C
 
 	for range ticker.C {
 		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
 		seqNo++
 	}
-}
-
-func durationToRegimeStart() time.Duration {
-	return (config.Start()).Sub(time.Now())
-}
-
-func durationOfHeartbeatInterval() time.Duration {
-	d, err := time.ParseDuration(fmt.Sprintf("%dms", config.DelayInterval()))
-	if err != nil {
-		log.Error.Fatal(err.Error())
-	}
-	return d
 }
 
 func init() {
