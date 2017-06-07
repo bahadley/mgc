@@ -1,6 +1,7 @@
 package leader
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -31,31 +32,13 @@ func PushHeartbeats() {
 	// Counting semaphore set to the number of addrs.
 	wg.Add(len(dsts))
 
-	// Launch all threads.  Each thread has a different destination.
+	// Launch all threads.  Each thread has a different follower.
 	for _, dst := range dsts {
 		go pushToFollower(dst)
 	}
 
 	// Wait for the threads to finish.
 	wg.Wait()
-}
-
-func pushToFollower(dst string) {
-	defer wg.Done()
-
-	go egress(dst, heartbeatChan, printChan)
-
-	timer := time.NewTimer((config.Start()).Sub(time.Now()))
-	<-timer.C
-
-	var seqNo uint16 = 0
-
-	ticker := time.NewTicker(time.Millisecond * config.DelayInterval())
-	for range ticker.C {
-		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
-		seqNo++
-	}
-
 }
 
 func Print() {
@@ -66,4 +49,33 @@ func Print() {
 		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
 			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
 	}
+}
+
+func pushToFollower(dst string) {
+	defer wg.Done()
+
+	go egress(dst, heartbeatChan, printChan)
+
+	var seqNo uint16 = 0
+
+	timer := time.NewTimer(durationToRegimeStart())
+	<-timer.C
+
+	ticker := time.NewTicker(durationOfHeartbeatInterval())
+	for range ticker.C {
+		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
+		seqNo++
+	}
+}
+
+func durationToRegimeStart() time.Duration {
+	return (config.Start()).Sub(time.Now())
+}
+
+func durationOfHeartbeatInterval() time.Duration {
+	d, err := time.ParseDuration(fmt.Sprintf("%dms", config.DelayInterval()))
+	if err != nil {
+		log.Error.Fatal(err.Error())
+	}
+	return d
 }
