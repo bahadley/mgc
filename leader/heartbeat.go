@@ -24,6 +24,8 @@ var (
 )
 
 func PushHeartbeats() {
+	heartbeatChan = make(chan *Heartbeat)
+
 	dsts := config.DstAddrs()
 
 	// Counting semaphore set to the number of addrs.
@@ -57,14 +59,11 @@ func pushToFollower(dst string) {
 }
 
 func Print() {
+	printChan = make(chan *Heartbeat, config.ChannelBufSz())
+
 	for {
 		hb := <-printChan
 		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
 			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
 	}
-}
-
-func init() {
-	printChan = make(chan *Heartbeat, config.ChannelBufSz())
-	heartbeatChan = make(chan *Heartbeat)
 }
