@@ -19,7 +19,7 @@ type (
 
 var (
 	heartbeatChan chan *Heartbeat
-	printChan     chan *Heartbeat
+	outputChan     chan *Heartbeat
 
 	wg sync.WaitGroup
 )
@@ -39,9 +39,9 @@ func PushHeartbeats() {
 	wg.Wait()
 }
 
-func Print() {
+func Output() {
 	for {
-		hb := <-printChan
+		hb := <-outputChan
 		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
 			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
 	}
@@ -50,7 +50,7 @@ func Print() {
 func pushToFollower(dst string) {
 	defer wg.Done()
 
-	go egress(dst, heartbeatChan, printChan)
+	go egress(dst, heartbeatChan, outputChan)
 
 	var seqNo uint16 = 0
 
@@ -66,5 +66,5 @@ func pushToFollower(dst string) {
 
 func init() {
 	heartbeatChan = make(chan *Heartbeat)
-	printChan = make(chan *Heartbeat, config.ChannelBufSz())
+	outputChan = make(chan *Heartbeat, config.ChannelBufSz())
 }
