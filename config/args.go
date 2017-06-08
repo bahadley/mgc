@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"strings"
 	"time"
 
@@ -60,24 +59,16 @@ func Port() string {
 	return *port
 }
 
-func DelayInterval() time.Duration {
-	return time.Duration(*delayInt)
-}
-
 func Start() time.Time {
 	return time.Unix(*start, 0)
 }
 
 func DurationToRegimeStart() time.Duration {
-	return (Start()).Sub(time.Now())
+	return (time.Unix(*start, 0)).Sub(time.Now())
 }
 
 func DurationOfHeartbeatInterval() time.Duration {
-	d, err := time.ParseDuration(fmt.Sprintf("%dms", DelayInterval()))
-	if err != nil {
-		log.Error.Fatal(err.Error())
-	}
-	return d
+	return time.Duration(*delayInt) * time.Millisecond
 }
 
 func init() {
