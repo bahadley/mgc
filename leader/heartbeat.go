@@ -6,7 +6,6 @@ import (
 
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
-	"github.com/bahadley/mgc/util"
 )
 
 type (
@@ -54,8 +53,8 @@ func pushToFollower(dst string) {
 
 	var seqNo uint16 = 0
 
-	ticker := time.NewTicker(util.DurationOfHeartbeatInterval())
-	timer := time.NewTimer(util.DurationToRegimeStart())
+	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
+	timer := time.NewTimer(config.DurationToRegimeStart())
 	<-timer.C
 
 	for range ticker.C {

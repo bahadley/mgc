@@ -5,7 +5,6 @@ import (
 
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
-	"github.com/bahadley/mgc/util"
 )
 
 type (
@@ -22,16 +21,15 @@ var (
 )
 
 func RunFailureDetector() {
-	timer := time.NewTimer(util.DurationToRegimeStart())
-	<-timer.C
+	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
+	timerStart := time.NewTimer(config.DurationToRegimeStart())
+	<-timerStart.C
 
-	freshnessInterval, err := time.ParseDuration("500ms")
-	if err != nil {
-		log.Error.Fatal(err.Error())
-	}
-	ticker := time.NewTicker(freshnessInterval)
-
+	n := noop{}
 	for range ticker.C {
+		timerFreshnessPoint := time.NewTimer(durationToNextFreshnessPoint(n))
+		<-timerFreshnessPoint.C
+
 		latestHeartbeat := ingestHeartbeats()
 		if latestHeartbeat == nil {
 			log.Info.Println("Leader is suspect")
