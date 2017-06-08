@@ -21,11 +21,11 @@ var (
 )
 
 func RunFailureDetector() {
-	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
 	n := noop{}
+	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for range ticker.C {
 		timerFreshnessPoint := time.NewTimer(durationToNextFreshnessPoint(n))
 		<-timerFreshnessPoint.C
