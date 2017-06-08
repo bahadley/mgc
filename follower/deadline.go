@@ -5,21 +5,31 @@ import (
 )
 
 type deadline interface {
-	predictor() int
-	safetyMargin() int
+	nextFreshnessPoint(t time.Time) time.Time
+	recordObservation(t time.Time, hb *heartbeat)
 }
 
-type noop struct{}
-
-func (n noop) predictor() int {
-	return 0
+type last struct {
+	lastDelayObs time.Duration
 }
 
-func (n noop) safetyMargin() int {
-	return 0
+func (n *last) nextFreshnessPoint(t time.Time) time.Time {
+	var fp time.Time
+
+	if n.lastDelayObs != 0 {
+		fp = t.Add(n.lastDelayObs)
+	} else {
+		fp = t.Add(time.Millisecond * 500)
+	}
+
+	return fp
 }
 
-func durationToNextFreshnessPoint(d deadline) time.Duration {
-	//t := d.predictor() + d.safetyMargin()
-	return time.Millisecond * 500
+func (n *last) recordObservation(t time.Time, hb *heartbeat) {
+	n.lastDelayObs = (hb.arrivalTime).Sub(t)
+}
+
+func nextFreshnessPoint(t time.Time, d deadline) time.Duration {
+	freshnessPoint := d.nextFreshnessPoint(t)
+	return freshnessPoint.Sub(t)
 }

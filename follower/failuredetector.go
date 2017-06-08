@@ -24,15 +24,17 @@ func RunFailureDetector() {
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
-	n := noop{}
+	var d deadline = &last{}
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
-	for range ticker.C {
-		timerFreshnessPoint := time.NewTimer(durationToNextFreshnessPoint(n))
-		<-timerFreshnessPoint.C
+	for t := range ticker.C {
+		freshnessPoint := time.NewTimer(nextFreshnessPoint(t, d))
+		<-freshnessPoint.C
 
 		latestHeartbeat := ingestHeartbeats()
 		if latestHeartbeat == nil {
 			log.Info.Println("Leader is suspect")
+		} else {
+			d.recordObservation(t, latestHeartbeat)
 		}
 	}
 }
@@ -48,18 +50,21 @@ func Output() {
 func ingestHeartbeats() *heartbeat {
 	var latestHeartbeat *heartbeat
 
-	for hb := range heartbeatChan {
+	select {
+	case hb := <-heartbeatChan:
 		outputChan <- hb
 		if latestHeartbeat == nil ||
 			(hb.arrivalTime).After(latestHeartbeat.arrivalTime) {
 			latestHeartbeat = hb
 		}
+	default:
+		latestHeartbeat = nil
 	}
 
 	return latestHeartbeat
 }
 
 func init() {
-	heartbeatChan = make(chan *heartbeat, config.ChannelBufSz())
+	heartbeatChan = make(chan *heartbeat)
 	outputChan = make(chan *heartbeat, config.ChannelBufSz())
 }

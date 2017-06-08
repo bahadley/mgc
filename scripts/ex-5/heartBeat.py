@@ -66,9 +66,9 @@ def topology():
     popens[s1] = s1.popen(EXECUTABLE_PATH, '-role=l', '-addr=%s' % s1.IP(), 
       '-dsts=%s,%s' % (s2.IP(), s3.IP()), '-start=%d' % startTime)
     popens[s2] = s2.popen(EXECUTABLE_PATH, '-role=f', 
-      '-addr=%s' % s2.IP())
+      '-addr=%s' % s2.IP(), '-start=%d' % startTime)
     popens[s3] = s3.popen(EXECUTABLE_PATH, '-role=f', 
-      '-addr=%s' % s3.IP())
+      '-addr=%s' % s3.IP(), '-start=%d' % startTime)
 
     with open(OUTPUT_FILE, 'w') as f:
       for h, line in pmonitor(popens, timeoutms=500):
