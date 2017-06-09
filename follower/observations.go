@@ -18,22 +18,20 @@ var (
 
 func runObservations() {
 	for {
-		event := <-eventChan
-
-		if event.eventType == heartbeatEvent {
+		switch event := <-eventChan; event.eventType {
+		case heartbeatEvent:
 			if !insert(event) {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not inserted",
 					event.src, event.seqNo)
 			}
-		} else if event.eventType == queryEvent {
-			reportChan <- &report{
-				freshnessPoint: event.eventTime.Add(time.Millisecond * 500)}
-		} else if event.eventType == freshnessEvent {
-			reportChan <- &report{
-				suspect: false}
+			outputChan <- event
+		case queryEvent:
+			reportChan <- &report{freshnessPoint: event.eventTime.Add(time.Millisecond * 500)}
+		case freshnessEvent:
+			reportChan <- &report{suspect: false}
+		default:
+			log.Error.Println("Invalid event type encountered")
 		}
-
-		outputChan <- event
 	}
 }
 

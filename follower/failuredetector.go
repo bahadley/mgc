@@ -66,13 +66,15 @@ func RunFailureDetector() {
 
 func Output() {
 	for {
-		event := <-outputChan
-		if event.eventType == heartbeatEvent {
+		switch event := <-outputChan; event.eventType {
+		case heartbeatEvent:
 			log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
 				event.eventTime.UnixNano(), event.seqNo)
-		} else if event.eventType == freshnessEvent {
+		case freshnessEvent:
 			log.Info.Printf("Freshness point: time (ns) %d",
 				event.eventTime.UnixNano())
+		default:
+			log.Error.Println("Invalid event type encountered")
 		}
 	}
 }
