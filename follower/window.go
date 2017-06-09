@@ -7,10 +7,10 @@ const (
 
 var (
 	// Invariant:  Heartbeats are in descending order by heartbeat.seqNo.
-	window []*heartbeat
+	window []*event
 )
 
-func insert(tmp *heartbeat) bool {
+func insert(tmp *event) bool {
 	inserted := false
 
 	for idx, hb := range window {
@@ -35,5 +35,5 @@ func insert(tmp *heartbeat) bool {
 }
 
 func init() {
-	window = make([]*heartbeat, bufSz)
+	window = make([]*event, bufSz)
 }

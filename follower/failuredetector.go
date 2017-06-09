@@ -7,35 +7,35 @@ import (
 	"github.com/bahadley/mgc/log"
 )
 
+const (
+	heartbeatId      = "H"
+	freshnessEventId = "F"
+)
+
 type (
-	heartbeat struct {
-		src         string
-		seqNo       uint16
-		arrivalTime time.Time
+	event struct {
+		eventTime time.Time
+		eventType string
+		src       string
+		seqNo     uint16
 	}
 )
 
 var (
-	heartbeatChan chan *heartbeat
-	outputChan    chan *heartbeat
+	eventChan  chan *event
+	outputChan chan *event
 )
 
 func RunFailureDetector() {
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
-	var d deadline = &last{}
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
-	for t := range ticker.C {
-		freshnessPoint := time.NewTimer(nextFreshnessPoint(t, d))
+	for range ticker.C {
+		freshnessPoint := time.NewTimer(time.Millisecond * 500)
 		<-freshnessPoint.C
 
-		latestHeartbeat := ingestHeartbeats()
-		if latestHeartbeat == nil {
-			log.Info.Println("Leader is suspect")
-		} else {
-			d.recordObservation(t, latestHeartbeat)
-		}
+		ingestHeartbeats()
 	}
 }
 
@@ -43,28 +43,16 @@ func Output() {
 	for {
 		hb := <-outputChan
 		log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
-			hb.arrivalTime.UnixNano(), hb.seqNo)
+			hb.eventTime.UnixNano(), hb.seqNo)
 	}
 }
 
-func ingestHeartbeats() *heartbeat {
-	var latestHeartbeat *heartbeat
-
-	select {
-	case hb := <-heartbeatChan:
-		outputChan <- hb
-		if latestHeartbeat == nil ||
-			(hb.arrivalTime).After(latestHeartbeat.arrivalTime) {
-			latestHeartbeat = hb
-		}
-	default:
-		latestHeartbeat = nil
-	}
-
-	return latestHeartbeat
+func ingestHeartbeats() {
+	hb := <-eventChan
+	outputChan <- hb
 }
 
 func init() {
-	heartbeatChan = make(chan *heartbeat)
-	outputChan = make(chan *heartbeat, config.ChannelBufSz())
+	eventChan = make(chan *event, config.ChannelBufSz())
+	outputChan = make(chan *event, config.ChannelBufSz())
 }

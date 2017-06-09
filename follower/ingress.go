@@ -42,10 +42,11 @@ func Ingress() {
 			log.Error.Fatal(err.Error())
 		}
 
-		heartbeatChan <- &heartbeat{
-			src:         caddr.String(),
-			seqNo:       seqNo,
-			arrivalTime: time.Now()}
+		eventChan <- &event{
+			eventTime: time.Now(),
+			eventType: heartbeatId,
+			src:       caddr.String(),
+			seqNo:     seqNo}
 
 		log.Trace.Printf("Rx(%s): % x", caddr, buf[0:n])
 	}

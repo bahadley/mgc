@@ -6,7 +6,7 @@ import (
 
 type deadline interface {
 	nextFreshnessPoint(t time.Time) time.Time
-	recordObservation(t time.Time, hb *heartbeat)
+	recordObservation(t time.Time, hb *event)
 }
 
 type last struct {
@@ -25,8 +25,8 @@ func (n *last) nextFreshnessPoint(t time.Time) time.Time {
 	return fp
 }
 
-func (n *last) recordObservation(t time.Time, hb *heartbeat) {
-	n.lastDelayObs = (hb.arrivalTime).Sub(t)
+func (n *last) recordObservation(t time.Time, hb *event) {
+	n.lastDelayObs = (hb.eventTime).Sub(t)
 }
 
 func nextFreshnessPoint(t time.Time, d deadline) time.Duration {
