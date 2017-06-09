@@ -44,7 +44,7 @@ func Ingress() {
 
 		eventChan <- &event{
 			eventTime: time.Now(),
-			eventType: heartbeatId,
+			eventType: heartbeatEvent,
 			src:       caddr.String(),
 			seqNo:     seqNo}
 

@@ -33,7 +33,7 @@ func main() {
 		go follower.RunFailureDetector()
 		follower.Ingress()
 	} else {
-		log.Info.Println("Role not implemented")
+		log.Error.Println("Role not implemented")
 	}
 
 	log.Info.Println("Shutting down ...")

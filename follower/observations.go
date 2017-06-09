@@ -1,14 +1,41 @@
 package follower
 
+import (
+	"time"
+
+	"github.com/bahadley/mgc/log"
+)
+
 const (
 	// Length of window.
 	bufSz uint32 = 4
 )
 
 var (
-	// Invariant:  Heartbeats are in descending order by heartbeat.seqNo.
+	// Invariant:  Heartbeats are in descending order by event.seqNo.
 	window []*event
 )
+
+func runObservations() {
+	for {
+		event := <-eventChan
+
+		if event.eventType == heartbeatEvent {
+			if !insert(event) {
+				log.Warning.Printf("Heartbeat from %s with seqNo %d not inserted",
+					event.src, event.seqNo)
+			}
+		} else if event.eventType == queryEvent {
+			reportChan <- &report{
+				freshnessPoint: event.eventTime.Add(time.Millisecond * 500)}
+		} else if event.eventType == freshnessEvent {
+			reportChan <- &report{
+				suspect: false}
+		}
+
+		outputChan <- event
+	}
+}
 
 func insert(tmp *event) bool {
 	inserted := false
