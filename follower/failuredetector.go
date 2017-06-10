@@ -38,7 +38,13 @@ var (
 )
 
 func RunFailureDetector() {
+	go runOutput()
 	go runObservations()
+	go runControlLoop()
+	runIngress()
+}
+
+func runControlLoop() {
 
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
@@ -64,7 +70,7 @@ func RunFailureDetector() {
 	}
 }
 
-func Output() {
+func runOutput() {
 	for {
 		switch event := <-outputChan; event.eventType {
 		case heartbeatEvent:

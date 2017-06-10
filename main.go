@@ -26,12 +26,9 @@ func main() {
 	}()
 
 	if config.IsLeader() {
-		go leader.Output()
-		leader.PushHeartbeats()
+		leader.RunHeartbeats()
 	} else if config.IsFollower() {
-		go follower.Output()
-		go follower.RunFailureDetector()
-		follower.Ingress()
+		follower.RunFailureDetector()
 	} else {
 		log.Error.Println("Role not implemented")
 	}

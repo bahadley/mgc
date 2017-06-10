@@ -10,7 +10,7 @@ import (
 	"github.com/bahadley/mgc/log"
 )
 
-func Ingress() {
+func runIngress() {
 	srcAddr, err := net.ResolveUDPAddr("udp",
 		config.Addr()+":"+config.Port())
 	if err != nil {

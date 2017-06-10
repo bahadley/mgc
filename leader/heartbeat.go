@@ -18,37 +18,29 @@ type (
 
 var (
 	heartbeatChan chan *Heartbeat
-	outputChan     chan *Heartbeat
+	outputChan    chan *Heartbeat
 
 	wg sync.WaitGroup
 )
 
-func PushHeartbeats() {
-	dsts := config.DstAddrs()
+func RunHeartbeats() {
+	go runOutput()
 
+	dsts := config.DstAddrs()
 	// Counting semaphore set to the number of addrs.
 	wg.Add(len(dsts))
 
 	// Launch all threads.  Each thread has a different follower.
 	for _, dst := range dsts {
-		go pushToFollower(dst)
+		go runPushToFollower(dst)
 	}
 
 	// Wait for the threads to finish.
 	wg.Wait()
 }
 
-func Output() {
-	for {
-		hb := <-outputChan
-		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
-			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
-	}
-}
-
-func pushToFollower(dst string) {
+func runPushToFollower(dst string) {
 	defer wg.Done()
-
 	go egress(dst, heartbeatChan, outputChan)
 
 	timer := time.NewTimer(config.DurationToRegimeStart())
@@ -59,6 +51,14 @@ func pushToFollower(dst string) {
 	for range ticker.C {
 		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
 		seqNo++
+	}
+}
+
+func runOutput() {
+	for {
+		hb := <-outputChan
+		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
+			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
 	}
 }
 
