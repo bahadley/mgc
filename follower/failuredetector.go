@@ -55,7 +55,6 @@ func runControlLoop() {
 			eventType: queryEvent}
 
 		rptF := <-reportChan
-
 		freshnessPoint := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
 		<-freshnessPoint.C
 
@@ -64,7 +63,6 @@ func runControlLoop() {
 			eventType: freshnessEvent}
 
 		rptL := <-reportChan
-
 		leaderSuspect = rptL.suspect
 	}
 }
