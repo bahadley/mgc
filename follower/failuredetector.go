@@ -45,7 +45,6 @@ func RunFailureDetector() {
 }
 
 func runControlLoop() {
-
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
