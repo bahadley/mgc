@@ -23,7 +23,7 @@ func runObservations() {
 	for {
 		switch event := <-eventChan; event.eventType {
 		case heartbeatEvent:
-			if !insert(event) {
+			if !insert(event, hbWindow) {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not inserted",
 					event.src, event.seqNo)
 			}
@@ -38,22 +38,22 @@ func runObservations() {
 	}
 }
 
-func insert(tmp *event) bool {
+func insert(tmp *event, window []*event) bool {
 	inserted := false
 
-	for idx, hb := range hbWindow {
+	for idx, hb := range window {
 		if inserted ||
 			(!inserted && hb != nil && tmp.seqNo > hb.seqNo) {
 			// Insert the new heartbeat and shift the subsequent heartbeats towards
 			// the back of the window.  The last heartbeat will fall off if the
 			// window is full.
-			hbWindow[idx] = tmp
+			window[idx] = tmp
 			tmp = hb
 			inserted = true
 		} else if !inserted && hb == nil {
 			// Window is currently empty and this is the first arriving heartbeat, or ...
 			// Out of order arrival and there is room at the back of the window.
-			hbWindow[idx] = tmp
+			window[idx] = tmp
 			inserted = true
 			break
 		}
