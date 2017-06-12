@@ -13,7 +13,10 @@ const (
 
 var (
 	// Invariant:  Heartbeats are in descending order by event.seqNo.
-	window []*event
+	hbWindow []*event
+
+	// Used to calculate next freshness points.  Defined in freshnessPoint.go
+	fpCalc deadline
 )
 
 func runObservations() {
@@ -38,19 +41,19 @@ func runObservations() {
 func insert(tmp *event) bool {
 	inserted := false
 
-	for idx, hb := range window {
+	for idx, hb := range hbWindow {
 		if inserted ||
 			(!inserted && hb != nil && tmp.seqNo > hb.seqNo) {
 			// Insert the new heartbeat and shift the subsequent heartbeats towards
 			// the back of the window.  The last heartbeat will fall off if the
 			// window is full.
-			window[idx] = tmp
+			hbWindow[idx] = tmp
 			tmp = hb
 			inserted = true
 		} else if !inserted && hb == nil {
 			// Window is currently empty and this is the first arriving heartbeat, or ...
 			// Out of order arrival and there is room at the back of the window.
-			window[idx] = tmp
+			hbWindow[idx] = tmp
 			inserted = true
 			break
 		}
@@ -60,5 +63,7 @@ func insert(tmp *event) bool {
 }
 
 func init() {
-	window = make([]*event, bufSz)
+	hbWindow = make([]*event, bufSz)
+
+	fpCalc = &last{}
 }
