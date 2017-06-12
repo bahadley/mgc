@@ -1,6 +1,7 @@
 package follower
 
 import (
+	"sync"
 	"time"
 
 	"github.com/bahadley/mgc/config"
@@ -35,24 +36,35 @@ var (
 	eventChan  chan *event
 	reportChan chan *report
 	outputChan chan *event
+
+	wg sync.WaitGroup
 )
 
 func RunFailureDetector() {
+	// Counting semaphore set to the number of threads.
+	wg.Add(4)
+
 	go runOutput()
 	go runObservations()
 	go runControlLoop()
-	runIngress()
+	go runIngress()
+
+	// Wait for the threads to finish.
+	wg.Wait()
 }
 
 func runControlLoop() {
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
+	var seqNo uint16 = 0
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for t := range ticker.C {
 		eventChan <- &event{
 			eventTime: t,
-			eventType: queryEvent}
+			eventType: queryEvent,
+			seqNo:     seqNo}
+		seqNo++
 
 		rptF := <-reportChan
 		freshnessPoint := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
