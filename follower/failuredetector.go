@@ -33,7 +33,7 @@ func RunFailureDetector() {
 	wg.Add(4)
 
 	go output()
-	go runObservations()
+	go manageObservations()
 	go controlLoop()
 	go net.Ingress(eventChan)
 
@@ -50,12 +50,11 @@ func controlLoop() {
 	// Tick when leader sends a heartbeat.
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for t := range ticker.C {
-		// Leader is sending, get a deadline for that heartbeat.
+		// Leader is scheduled to send, so get a deadline for the heartbeat.
 		eventChan <- &common.Event{
 			EventTime: t,
 			EventType: common.QueryEvent,
 			SeqNo:     seqNo}
-		seqNo++
 
 		// Block waiting for deadline calc from observations.
 		rptF := <-reportChan
@@ -65,11 +64,14 @@ func controlLoop() {
 		// Determine if heartbeat arrived.
 		eventChan <- &common.Event{
 			EventTime: time.Now(),
-			EventType: common.FreshnessEvent}
+			EventType: common.FreshnessEvent,
+			SeqNo: seqNo}
 
 		// Block waiting for trust/suspect verdict.
 		rptL := <-reportChan
 		leaderSuspect = rptL.suspect
+
+		seqNo++
 	}
 }
 

@@ -16,11 +16,13 @@ var (
 	// Invariant:  Heartbeats are in descending order by event.seqNo.
 	hbWindow []*common.Heartbeat
 
-	// Used to calculate next freshness points.  Defined in freshnessPoint.go
+	// Used to calculate next freshness points.
 	dlCalc deadline
+	// Used to determine the trust/suspect verdict for the leader.
+	vCalc verdict
 )
 
-func runObservations() {
+func manageObservations() {
 	for {
 		switch event := <-eventChan; event.EventType {
 		case common.HeartbeatEvent:
@@ -36,7 +38,7 @@ func runObservations() {
 					event.SeqNo)
 			}
 		case common.FreshnessEvent:
-			reportChan <- &report{suspect: false}
+			reportChan <- &report{suspect: vCalc.check(event.SeqNo)}
 		default:
 			log.Error.Println("Invalid event type encountered")
 		}
@@ -86,4 +88,5 @@ func init() {
 	hbWindow = make([]*common.Heartbeat, bufSz)
 
 	dlCalc = &last{}
+	vCalc = &basic{}
 }
