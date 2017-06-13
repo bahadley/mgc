@@ -5,20 +5,14 @@ import (
 	"time"
 
 	"github.com/bahadley/mgc/config"
+	"github.com/bahadley/mgc/common"
 	"github.com/bahadley/mgc/log"
-)
-
-type (
-	Heartbeat struct {
-		dst          string
-		seqNo        uint16
-		transmitTime time.Time
-	}
+	"github.com/bahadley/mgc/net"
 )
 
 var (
-	heartbeatChan chan *Heartbeat
-	outputChan    chan *Heartbeat
+	heartbeatChan chan *common.Heartbeat
+	outputChan    chan *common.Heartbeat
 
 	wg sync.WaitGroup
 )
@@ -41,7 +35,7 @@ func RunHeartbeats() {
 
 func runPushToFollower(dst string) {
 	defer wg.Done()
-	go egress(dst, heartbeatChan, outputChan)
+	go net.Egress(dst, heartbeatChan, outputChan)
 
 	timer := time.NewTimer(config.DurationToRegimeStart())
 	<-timer.C
@@ -49,7 +43,7 @@ func runPushToFollower(dst string) {
 	var seqNo uint16 = 0
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for range ticker.C {
-		heartbeatChan <- &Heartbeat{dst: dst, seqNo: seqNo}
+		heartbeatChan <- &common.Heartbeat{Dst: dst, SeqNo: seqNo}
 		seqNo++
 	}
 }
@@ -58,11 +52,11 @@ func runOutput() {
 	for {
 		hb := <-outputChan
 		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
-			hb.transmitTime.UnixNano(), hb.dst, hb.seqNo)
+			hb.SendTime.UnixNano(), hb.Dst, hb.SeqNo)
 	}
 }
 
 func init() {
-	heartbeatChan = make(chan *Heartbeat)
-	outputChan = make(chan *Heartbeat, config.ChannelBufSz())
+	heartbeatChan = make(chan *common.Heartbeat)
+	outputChan = make(chan *common.Heartbeat, config.ChannelBufSz())
 }

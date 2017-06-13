@@ -1,4 +1,4 @@
-package leader
+package net
 
 import (
 	"bytes"
@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/bahadley/mgc/config"
+	"github.com/bahadley/mgc/common"
 	"github.com/bahadley/mgc/log"
 )
 
-func egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
+func Egress(dst string, input <-chan *common.Heartbeat, output chan<- *common.Heartbeat) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
 		dst+":"+config.Port())
 	if err != nil {
@@ -34,13 +35,13 @@ func egress(dst string, input <-chan *Heartbeat, output chan<- *Heartbeat) {
 		hb := <-input
 
 		buf := new(bytes.Buffer)
-		err := binary.Write(buf, binary.LittleEndian, hb.seqNo)
+		err := binary.Write(buf, binary.LittleEndian, hb.SeqNo)
 		if err != nil {
 			log.Error.Fatal(err.Error())
 		}
 
 		log.Trace.Printf("Tx(%s): % x", dstAddr, buf.Bytes())
-		hb.transmitTime = time.Now()
+		hb.SendTime = time.Now()
 		output <- hb
 
 		_, err = conn.Write(buf.Bytes())

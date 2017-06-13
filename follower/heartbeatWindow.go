@@ -3,6 +3,7 @@ package follower
 import (
 	"time"
 
+	"github.com/bahadley/mgc/common"
 	"github.com/bahadley/mgc/log"
 )
 
@@ -11,18 +12,9 @@ const (
 	bufSz uint32 = 4
 )
 
-type (
-	heartbeat struct {
-		seqNo       uint16
-		sendTime    time.Time
-		arrivalTime time.Time
-		transDelay  time.Duration
-	}
-)
-
 var (
 	// Invariant:  Heartbeats are in descending order by event.seqNo.
-	hbWindow []*heartbeat
+	hbWindow []*common.Heartbeat
 
 	// Used to calculate next freshness points.  Defined in freshnessPoint.go
 	fpCalc deadline
@@ -30,20 +22,20 @@ var (
 
 func runObservations() {
 	for {
-		switch event := <-eventChan; event.eventType {
-		case heartbeatEvent:
-			if !update(event.seqNo, event.eventTime) {
+		switch event := <-eventChan; event.EventType {
+		case common.HeartbeatEvent:
+			if !update(event.SeqNo, event.EventTime) {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not registered",
-					event.src, event.seqNo)
+					event.Src, event.SeqNo)
 			}
 			outputChan <- event
-		case queryEvent:
-			if !insert(&heartbeat{seqNo: event.seqNo, sendTime: event.eventTime}) {
+		case common.QueryEvent:
+			if !insert(&common.Heartbeat{SeqNo: event.SeqNo, SendTime: event.EventTime}) {
 				log.Warning.Printf("Heartbeat initialization with seqNo %d not inserted",
-					event.seqNo)
+					event.SeqNo)
 			}
-			reportChan <- &report{freshnessPoint: event.eventTime.Add(time.Millisecond * 500)}
-		case freshnessEvent:
+			reportChan <- &report{freshnessPoint: event.EventTime.Add(time.Millisecond * 500)}
+		case common.FreshnessEvent:
 			reportChan <- &report{suspect: false}
 		default:
 			log.Error.Println("Invalid event type encountered")
@@ -51,12 +43,12 @@ func runObservations() {
 	}
 }
 
-func insert(tmp *heartbeat) bool {
+func insert(tmp *common.Heartbeat) bool {
 	inserted := false
 
 	for idx, hb := range hbWindow {
 		if inserted ||
-			(!inserted && hb != nil && tmp.seqNo > hb.seqNo) {
+			(!inserted && hb != nil && tmp.SeqNo > hb.SeqNo) {
 			// Insert the new heartbeat and shift the subsequent heartbeats towards
 			// the back of the window.  The last heartbeat will fall off if the
 			// window is full.
@@ -78,9 +70,9 @@ func update(seqNo uint16, arrivalTime time.Time) bool {
 	updated := false
 
 	for idx := bufSz - 1; idx >= 0; idx-- {
-		if hbWindow[idx] != nil && hbWindow[idx].seqNo == seqNo {
-			hbWindow[idx].arrivalTime = arrivalTime
-			hbWindow[idx].transDelay = arrivalTime.Sub(hbWindow[idx].sendTime)
+		if hbWindow[idx] != nil && hbWindow[idx].SeqNo == seqNo {
+			hbWindow[idx].ArrivalTime = arrivalTime
+			hbWindow[idx].TransDelay = arrivalTime.Sub(hbWindow[idx].SendTime)
 			updated = true
 			break
 		}
@@ -90,7 +82,7 @@ func update(seqNo uint16, arrivalTime time.Time) bool {
 }
 
 func init() {
-	hbWindow = make([]*heartbeat, bufSz)
+	hbWindow = make([]*common.Heartbeat, bufSz)
 
 	fpCalc = &last{}
 }

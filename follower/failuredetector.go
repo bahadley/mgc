@@ -4,25 +4,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bahadley/mgc/common"
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
-)
-
-const (
-	// Types for events passed in the eventChan
-	heartbeatEvent = "H"
-	freshnessEvent = "F"
-	queryEvent     = "Q"
+	"github.com/bahadley/mgc/net"
 )
 
 type (
-	event struct {
-		eventTime time.Time
-		eventType string
-		src       string
-		seqNo     uint16
-	}
-
 	report struct {
 		suspect        bool
 		freshnessPoint time.Time
@@ -33,9 +21,9 @@ var (
 	// Leader is suspect if true, trusted if false
 	leaderSuspect bool
 
-	eventChan  chan *event
+	eventChan  chan *common.Event
 	reportChan chan *report
-	outputChan chan *event
+	outputChan chan *common.Event
 
 	wg sync.WaitGroup
 )
@@ -47,7 +35,7 @@ func RunFailureDetector() {
 	go runOutput()
 	go runObservations()
 	go runControlLoop()
-	go runIngress()
+	go net.Ingress(eventChan)
 
 	// Wait for the threads to finish.
 	wg.Wait()
@@ -60,19 +48,19 @@ func runControlLoop() {
 	var seqNo uint16 = 0
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for t := range ticker.C {
-		eventChan <- &event{
-			eventTime: t,
-			eventType: queryEvent,
-			seqNo:     seqNo}
+		eventChan <- &common.Event{
+			EventTime: t,
+			EventType: common.QueryEvent,
+			SeqNo:     seqNo}
 		seqNo++
 
 		rptF := <-reportChan
 		freshnessPoint := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
 		<-freshnessPoint.C
 
-		eventChan <- &event{
-			eventTime: time.Now(),
-			eventType: freshnessEvent}
+		eventChan <- &common.Event{
+			EventTime: time.Now(),
+			EventType: common.FreshnessEvent}
 
 		rptL := <-reportChan
 		leaderSuspect = rptL.suspect
@@ -81,13 +69,13 @@ func runControlLoop() {
 
 func runOutput() {
 	for {
-		switch event := <-outputChan; event.eventType {
-		case heartbeatEvent:
+		switch event := <-outputChan; event.EventType {
+		case common.HeartbeatEvent:
 			log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
-				event.eventTime.UnixNano(), event.seqNo)
-		case freshnessEvent:
+				event.EventTime.UnixNano(), event.SeqNo)
+		case common.FreshnessEvent:
 			log.Info.Printf("Freshness point: time (ns) %d",
-				event.eventTime.UnixNano())
+				event.EventTime.UnixNano())
 		default:
 			log.Error.Println("Invalid event type encountered")
 		}
@@ -95,7 +83,7 @@ func runOutput() {
 }
 
 func init() {
-	eventChan = make(chan *event, config.ChannelBufSz())
+	eventChan = make(chan *common.Event, config.ChannelBufSz())
 	reportChan = make(chan *report)
-	outputChan = make(chan *event, config.ChannelBufSz())
+	outputChan = make(chan *common.Event, config.ChannelBufSz())
 }

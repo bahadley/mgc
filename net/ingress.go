@@ -1,4 +1,4 @@
-package follower
+package net
 
 import (
 	"bytes"
@@ -6,11 +6,12 @@ import (
 	"net"
 	"time"
 
+	"github.com/bahadley/mgc/common"
 	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 )
 
-func runIngress() {
+func Ingress(output chan<- *common.Event) {
 	srcAddr, err := net.ResolveUDPAddr("udp",
 		config.Addr()+":"+config.Port())
 	if err != nil {
@@ -42,11 +43,11 @@ func runIngress() {
 			log.Error.Fatal(err.Error())
 		}
 
-		eventChan <- &event{
-			eventTime: time.Now(),
-			eventType: heartbeatEvent,
-			src:       caddr.String(),
-			seqNo:     seqNo}
+		output <- &common.Event{
+			EventTime: time.Now(),
+			EventType: common.HeartbeatEvent,
+			Src:       caddr.String(),
+			SeqNo:     seqNo}
 
 		log.Trace.Printf("Rx(%s): % x", caddr, buf[0:n])
 	}
