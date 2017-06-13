@@ -17,7 +17,7 @@ var (
 	hbWindow []*common.Heartbeat
 
 	// Used to calculate next freshness points.  Defined in freshnessPoint.go
-	fpCalc deadline
+	dlCalc deadline
 )
 
 func runObservations() {
@@ -30,11 +30,11 @@ func runObservations() {
 			}
 			outputChan <- event
 		case common.QueryEvent:
+			reportChan <- &report{freshnessPoint: dlCalc.nextDeadline(event.EventTime)}
 			if !insert(&common.Heartbeat{SeqNo: event.SeqNo, SendTime: event.EventTime}) {
 				log.Warning.Printf("Heartbeat initialization with seqNo %d not inserted",
 					event.SeqNo)
 			}
-			reportChan <- &report{freshnessPoint: event.EventTime.Add(time.Millisecond * 500)}
 		case common.FreshnessEvent:
 			reportChan <- &report{suspect: false}
 		default:
@@ -69,10 +69,11 @@ func insert(tmp *common.Heartbeat) bool {
 func update(seqNo uint16, arrivalTime time.Time) bool {
 	updated := false
 
-	for idx := bufSz - 1; idx >= 0; idx-- {
-		if hbWindow[idx] != nil && hbWindow[idx].SeqNo == seqNo {
-			hbWindow[idx].ArrivalTime = arrivalTime
-			hbWindow[idx].TransDelay = arrivalTime.Sub(hbWindow[idx].SendTime)
+	// Search for heartbeat with same sequence number.
+	for _, hb := range hbWindow {
+		if hb != nil && hb.SeqNo == seqNo {
+			hb.ArrivalTime = arrivalTime
+			hb.TransDelay = arrivalTime.Sub(hb.SendTime)
 			updated = true
 			break
 		}
@@ -84,5 +85,5 @@ func update(seqNo uint16, arrivalTime time.Time) bool {
 func init() {
 	hbWindow = make([]*common.Heartbeat, bufSz)
 
-	fpCalc = &last{}
+	dlCalc = &last{}
 }

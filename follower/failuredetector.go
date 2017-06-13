@@ -32,42 +32,48 @@ func RunFailureDetector() {
 	// Counting semaphore set to the number of threads.
 	wg.Add(4)
 
-	go runOutput()
+	go output()
 	go runObservations()
-	go runControlLoop()
+	go controlLoop()
 	go net.Ingress(eventChan)
 
 	// Wait for the threads to finish.
 	wg.Wait()
 }
 
-func runControlLoop() {
+func controlLoop() {
+	// Block waiting for coordinated regime start.
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
 	var seqNo uint16 = 0
+	// Tick when leader sends a heartbeat.
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for t := range ticker.C {
+		// Leader is sending, get a deadline for that heartbeat.
 		eventChan <- &common.Event{
 			EventTime: t,
 			EventType: common.QueryEvent,
 			SeqNo:     seqNo}
 		seqNo++
 
+		// Block waiting for deadline calc from observations.
 		rptF := <-reportChan
-		freshnessPoint := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
-		<-freshnessPoint.C
+		deadline := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
+		<-deadline.C
 
+		// Determine if heartbeat arrived.
 		eventChan <- &common.Event{
 			EventTime: time.Now(),
 			EventType: common.FreshnessEvent}
 
+		// Block waiting for trust/suspect verdict.
 		rptL := <-reportChan
 		leaderSuspect = rptL.suspect
 	}
 }
 
-func runOutput() {
+func output() {
 	for {
 		switch event := <-outputChan; event.EventType {
 		case common.HeartbeatEvent:
