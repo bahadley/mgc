@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/common"
+	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 	"github.com/bahadley/mgc/net"
 )

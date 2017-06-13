@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	// Types for events passed in the eventChan
+	// Types for Event.EventType
 	HeartbeatEvent = "H"
 	FreshnessEvent = "F"
 	QueryEvent     = "Q"

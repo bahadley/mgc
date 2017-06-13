@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/common"
+	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
 )
 
