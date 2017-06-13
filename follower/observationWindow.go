@@ -32,13 +32,18 @@ func manageObservations() {
 			}
 			outputChan <- event
 		case common.QueryEvent:
-			reportChan <- &report{freshnessPoint: dlCalc.nextDeadline(event.EventTime)}
-			if !insert(&common.Heartbeat{SeqNo: event.SeqNo, SendTime: event.EventTime}) {
+			reportChan <- &common.Event{
+				EventTime:      time.Now(),
+				FreshnessPoint: dlCalc.nextDeadline(event.EventTime)}
+			if !insert(&common.Heartbeat{
+				SeqNo:    event.SeqNo,
+				SendTime: event.EventTime}) {
 				log.Warning.Printf("Heartbeat initialization with seqNo %d not inserted",
 					event.SeqNo)
 			}
 		case common.FreshnessEvent:
-			reportChan <- &report{suspect: vCalc.check(event.SeqNo)}
+			reportChan <- &common.Event{
+				Suspect: vCalc.check(event.SeqNo)}
 		default:
 			log.Error.Println("Invalid event type encountered")
 		}

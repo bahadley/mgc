@@ -10,19 +10,12 @@ import (
 	"github.com/bahadley/mgc/net"
 )
 
-type (
-	report struct {
-		suspect        bool
-		freshnessPoint time.Time
-	}
-)
-
 var (
 	// Leader is suspect if true, trusted if false
 	leaderSuspect bool
 
 	eventChan  chan *common.Event
-	reportChan chan *report
+	reportChan chan *common.Event
 	outputChan chan *common.Event
 
 	wg sync.WaitGroup
@@ -58,7 +51,7 @@ func controlLoop() {
 
 		// Block waiting for deadline calc from observations.
 		rptF := <-reportChan
-		deadline := time.NewTimer(rptF.freshnessPoint.Sub(time.Now()))
+		deadline := time.NewTimer(rptF.FreshnessPoint.Sub(time.Now()))
 		<-deadline.C
 
 		// Determine if heartbeat arrived.
@@ -69,7 +62,7 @@ func controlLoop() {
 
 		// Block waiting for trust/suspect verdict.
 		rptL := <-reportChan
-		leaderSuspect = rptL.suspect
+		leaderSuspect = rptL.Suspect
 
 		seqNo++
 	}
@@ -92,6 +85,6 @@ func output() {
 
 func init() {
 	eventChan = make(chan *common.Event, config.ChannelBufSz())
-	reportChan = make(chan *report)
+	reportChan = make(chan *common.Event)
 	outputChan = make(chan *common.Event, config.ChannelBufSz())
 }
