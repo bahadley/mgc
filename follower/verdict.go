@@ -13,7 +13,7 @@ func (b *basic) check(seqNo uint16) bool {
 	for _, hb := range hbWindow {
 		if hb != nil && hb.SeqNo == seqNo {
 			// Leader is not suspected if ArrivalTime is set.
-			suspect = !hb.ArrivalTime.IsZero()
+			suspect = hb.ArrivalTime.IsZero()
 		}
 	}
 
