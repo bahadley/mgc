@@ -31,8 +31,9 @@ func manageObservations() {
 					event.Src, event.SeqNo)
 			}
 			outputChan <- event
-		case common.QueryEvent:
+		case common.Query:
 			reportChan <- &common.Event{
+				EventType:      common.Query,
 				EventTime:      time.Now(),
 				FreshnessPoint: dlCalc.nextDeadline(event.EventTime)}
 			if !insert(&common.Heartbeat{
@@ -43,7 +44,10 @@ func manageObservations() {
 			}
 		case common.FreshnessEvent:
 			reportChan <- &common.Event{
-				Suspect: vCalc.check(event.SeqNo)}
+				EventType: common.Verdict,
+				EventTime: time.Now(),
+				SeqNo:     event.SeqNo,
+				Suspect:   vCalc.check(event.SeqNo)}
 		default:
 			log.Error.Println("Invalid event type encountered")
 		}

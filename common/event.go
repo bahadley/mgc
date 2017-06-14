@@ -8,7 +8,7 @@ const (
 	// Types for Event.EventType
 	HeartbeatEvent = "H"
 	FreshnessEvent = "F"
-	QueryEvent     = "Q"
+	Query          = "Q"
 	Verdict        = "V"
 )
 
