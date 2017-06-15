@@ -53,6 +53,7 @@ func controlLoop() {
 		rptF := <-reportChan
 		deadline := time.NewTimer(rptF.FreshnessPoint.Sub(time.Now()))
 		<-deadline.C
+		outputChan <- rptF
 
 		// Determine if heartbeat arrived.
 		eventChan <- &common.Event{
@@ -75,6 +76,9 @@ func output() {
 		case common.HeartbeatEvent:
 			log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
 				event.EventTime.UnixNano(), event.SeqNo)
+		case common.Query:
+			log.Info.Printf("Deadline established at time (ns): %d, seqno: %d, duration: %d",
+				event.EventTime.UnixNano(), event.SeqNo, event.FreshnessPoint.Sub(event.EventTime))
 		case common.FreshnessEvent:
 			log.Info.Printf("Freshness point: time (ns) %d",
 				event.EventTime.UnixNano())

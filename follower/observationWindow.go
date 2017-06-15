@@ -25,16 +25,20 @@ var (
 func manageObservations() {
 	for {
 		switch event := <-eventChan; event.EventType {
+		// Heartbeat received from network interface.  Set the arrival time in
+		// matching shell record in the observation window
 		case common.HeartbeatEvent:
 			if !update(event.SeqNo, event.EventTime) {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not registered",
 					event.Src, event.SeqNo)
 			}
-			outputChan <- event
+			//outputChan <- event
+		// Leader will be sending a heartbeat now.  Calculate a deadline and
+		// create a shell record in the observation window.
 		case common.Query:
 			reportChan <- &common.Event{
 				EventType:      common.Query,
-				EventTime:      time.Now(),
+				EventTime:      event.EventTime,
 				FreshnessPoint: dlCalc.nextDeadline(event.EventTime)}
 			if !insert(&common.Heartbeat{
 				SeqNo:    event.SeqNo,
@@ -42,6 +46,8 @@ func manageObservations() {
 				log.Warning.Printf("Heartbeat initialization with seqNo %d not inserted",
 					event.SeqNo)
 			}
+		// Deadline has expired.  Determine if a heartbeat has arrived for
+		// this period.
 		case common.FreshnessEvent:
 			reportChan <- &common.Event{
 				EventType: common.Verdict,
