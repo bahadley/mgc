@@ -18,7 +18,7 @@ var (
 )
 
 func RunHeartbeats() {
-	go runOutput()
+	go output()
 
 	dsts := config.DstAddrs()
 	// Counting semaphore set to the number of addrs.
@@ -26,14 +26,14 @@ func RunHeartbeats() {
 
 	// Launch all threads.  Each thread has a different follower.
 	for _, dst := range dsts {
-		go runPushToFollower(dst)
+		go pushToFollower(dst)
 	}
 
 	// Wait for the threads to finish.
 	wg.Wait()
 }
 
-func runPushToFollower(dst string) {
+func pushToFollower(dst string) {
 	defer wg.Done()
 	go net.Egress(dst, heartbeatChan, outputChan)
 
@@ -48,11 +48,11 @@ func runPushToFollower(dst string) {
 	}
 }
 
-func runOutput() {
+func output() {
 	for {
 		event := <-outputChan
-        log.Info.Printf("%s|%d||%s|%d||", event.EventType,
-            event.EventTime.UnixNano(), event.Dst, event.SeqNo)
+		log.Info.Printf("%s|%d||%s|%d||", event.EventType,
+			event.EventTime.UnixNano(), event.Dst, event.SeqNo)
 	}
 }
 
