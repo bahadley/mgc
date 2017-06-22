@@ -4,12 +4,8 @@ import (
 	"time"
 
 	"github.com/bahadley/mgc/common"
+	"github.com/bahadley/mgc/config"
 	"github.com/bahadley/mgc/log"
-)
-
-const (
-	// Length of window.
-	bufSz uint32 = 4
 )
 
 var (
@@ -100,7 +96,7 @@ func update(seqNo common.SeqNoType, arrivalTime time.Time) bool {
 }
 
 func init() {
-	hbWindow = make([]*common.Heartbeat, bufSz)
+	hbWindow = make([]*common.Heartbeat, config.DefaultWindowSz())
 
 	dlCalc = &last{}
 	vCalc = &basic{}
