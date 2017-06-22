@@ -1,11 +1,23 @@
 package config
 
+import (
+	"time"
+)
+
 const (
 	defaultTupleBufLen = 128
 	defaultTupleBufCap = 1024
 	defaultChanBufSz   = 1000
 
+	// Number of observations to maintain in sliding window.
 	defaultWindowSz = 4
+
+	// Duration in milliseconds of constant safety margin.
+	defaultSafetyMargin = 50
+
+	// Deadline duration for initial bootstraping of failure
+	// detection (i.e., no observations are available).
+	defaultDeadline = 500
 )
 
 func TupleBufLen() uint32 {
@@ -22,4 +34,12 @@ func ChannelBufSz() int {
 
 func DefaultWindowSz() uint32 {
 	return defaultWindowSz
+}
+
+func DefaultSafetyMargin() time.Duration {
+	return time.Duration(defaultSafetyMargin)
+}
+
+func DefaultDeadline() time.Duration {
+	return time.Duration(defaultDeadline)
 }

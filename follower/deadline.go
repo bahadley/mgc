@@ -2,6 +2,8 @@ package follower
 
 import (
 	"time"
+
+	"github.com/bahadley/mgc/config"
 )
 
 type deadline interface {
@@ -11,9 +13,11 @@ type deadline interface {
 type last struct{}
 
 func (n *last) nextDeadline(t time.Time) time.Time {
-	var dl time.Time
+	var predictor time.Time
 	var lastDelay time.Duration
 
+	// Search the observation window for the most recent observation
+	// with a heartbeat recorded.
 	for _, hb := range hbWindow {
 		if !(hb == nil || hb.ArrivalTime.IsZero()) {
 			lastDelay = hb.TransDelay
@@ -21,10 +25,11 @@ func (n *last) nextDeadline(t time.Time) time.Time {
 	}
 
 	if lastDelay > 0 {
-		dl = t.Add(lastDelay)
+		predictor = t.Add(lastDelay)
 	} else {
-		dl = t.Add(time.Millisecond * 500)
+		predictor = t.Add(config.DefaultDeadline() * time.Millisecond)
 	}
 
-	return dl
+	// Add a constant safety margin.
+	return predictor.Add(config.DefaultSafetyMargin() * time.Millisecond)
 }
