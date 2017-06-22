@@ -5,9 +5,11 @@ import (
 )
 
 type (
+	SeqNoType uint16
+
 	Heartbeat struct {
 		Dst         string
-		SeqNo       uint16
+		SeqNo       SeqNoType
 		SendTime    time.Time
 		ArrivalTime time.Time
 		TransDelay  time.Duration

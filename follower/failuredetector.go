@@ -39,7 +39,7 @@ func controlLoop() {
 	timerStart := time.NewTimer(config.DurationToRegimeStart())
 	<-timerStart.C
 
-	var seqNo uint16 = 0
+	var seqNo common.SeqNoType = 0
 	// Tick when leader sends a heartbeat.
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for t := range ticker.C {

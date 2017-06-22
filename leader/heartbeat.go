@@ -40,7 +40,7 @@ func runPushToFollower(dst string) {
 	timer := time.NewTimer(config.DurationToRegimeStart())
 	<-timer.C
 
-	var seqNo uint16 = 0
+	var seqNo common.SeqNoType = 0
 	ticker := time.NewTicker(config.DurationOfHeartbeatInterval())
 	for range ticker.C {
 		heartbeatChan <- &common.Heartbeat{Dst: dst, SeqNo: seqNo}

@@ -83,7 +83,7 @@ func insert(tmp *common.Heartbeat) bool {
 	return inserted
 }
 
-func update(seqNo uint16, arrivalTime time.Time) bool {
+func update(seqNo common.SeqNoType, arrivalTime time.Time) bool {
 	updated := false
 
 	// Search for heartbeat with same sequence number.

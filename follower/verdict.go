@@ -1,12 +1,16 @@
 package follower
 
+import (
+	"github.com/bahadley/mgc/common"
+)
+
 type verdict interface {
-	check(seqNo uint16) bool
+	check(seqNo common.SeqNoType) bool
 }
 
 type basic struct{}
 
-func (b *basic) check(seqNo uint16) bool {
+func (b *basic) check(seqNo common.SeqNoType) bool {
 	suspect := true
 
 	// Search for heartbeat with matching sequence number.

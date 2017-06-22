@@ -29,7 +29,7 @@ func Ingress(output chan<- *common.Event) {
 		srcAddr.String())
 
 	buf := make([]byte, config.TupleBufLen(), config.TupleBufCap())
-	var seqNo uint16
+	var seqNo common.SeqNoType
 	for {
 		n, caddr, err := conn.ReadFromUDP(buf)
 		if err != nil {

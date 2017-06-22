@@ -17,7 +17,7 @@ type (
 		EventTime      time.Time
 		EventType      string
 		Src            string
-		SeqNo          uint16
+		SeqNo          SeqNoType
 		Suspect        bool
 		FreshnessPoint time.Time
 	}
