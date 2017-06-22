@@ -12,7 +12,7 @@ import (
 
 var (
 	heartbeatChan chan *common.Heartbeat
-	outputChan    chan *common.Heartbeat
+	outputChan    chan *common.Event
 
 	wg sync.WaitGroup
 )
@@ -50,13 +50,13 @@ func runPushToFollower(dst string) {
 
 func runOutput() {
 	for {
-		hb := <-outputChan
-		log.Info.Printf("Sent heartbeat: time (ns): %d, dst: %s, seqno: %d",
-			hb.SendTime.UnixNano(), hb.Dst, hb.SeqNo)
+		event := <-outputChan
+        log.Info.Printf("%s|%d||%s|%d||", event.EventType,
+            event.EventTime.UnixNano(), event.Dst, event.SeqNo)
 	}
 }
 
 func init() {
 	heartbeatChan = make(chan *common.Heartbeat)
-	outputChan = make(chan *common.Heartbeat, config.ChannelBufSz())
+	outputChan = make(chan *common.Event, config.ChannelBufSz())
 }

@@ -35,6 +35,7 @@ func manageObservations() {
 			reportChan <- &common.Event{
 				EventType:      common.Query,
 				EventTime:      event.EventTime,
+				SeqNo:          event.SeqNo,
 				FreshnessPoint: dlCalc.nextDeadline(event.EventTime)}
 			if !insert(&common.Heartbeat{
 				SeqNo:    event.SeqNo,

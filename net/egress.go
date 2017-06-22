@@ -11,7 +11,7 @@ import (
 	"github.com/bahadley/mgc/log"
 )
 
-func Egress(dst string, input <-chan *common.Heartbeat, output chan<- *common.Heartbeat) {
+func Egress(dst string, input <-chan *common.Heartbeat, output chan<- *common.Event) {
 	dstAddr, err := net.ResolveUDPAddr("udp",
 		dst+":"+config.Port())
 	if err != nil {
@@ -41,8 +41,11 @@ func Egress(dst string, input <-chan *common.Heartbeat, output chan<- *common.He
 		}
 
 		log.Trace.Printf("Tx(%s): % x", dstAddr, buf.Bytes())
-		hb.SendTime = time.Now()
-		output <- hb
+		output <- &common.Event{
+			EventType: common.SendHeartbeat,
+			EventTime: time.Now(),
+			Dst:       hb.Dst,
+			SeqNo:     hb.SeqNo}
 
 		_, err = conn.Write(buf.Bytes())
 		if err != nil {

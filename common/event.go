@@ -10,13 +10,15 @@ const (
 	FreshnessEvent = "F"
 	Query          = "Q"
 	Verdict        = "V"
+	SendHeartbeat  = "S"
 )
 
 type (
 	Event struct {
-		EventTime      time.Time
 		EventType      string
+		EventTime      time.Time
 		Src            string
+		Dst            string
 		SeqNo          SeqNoType
 		Suspect        bool
 		FreshnessPoint time.Time

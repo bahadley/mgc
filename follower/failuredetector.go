@@ -45,8 +45,8 @@ func controlLoop() {
 	for t := range ticker.C {
 		// Leader is scheduled to send, so get a deadline for the heartbeat.
 		eventChan <- &common.Event{
-			EventTime: t,
 			EventType: common.Query,
+			EventTime: t,
 			SeqNo:     seqNo}
 
 		// Block waiting for deadline calc from observations.
@@ -57,8 +57,8 @@ func controlLoop() {
 
 		// Determine if heartbeat arrived.
 		eventChan <- &common.Event{
-			EventTime: time.Now(),
 			EventType: common.FreshnessEvent,
+			EventTime: time.Now(),
 			SeqNo:     seqNo}
 
 		// Block waiting for trust/suspect verdict.
@@ -73,18 +73,14 @@ func controlLoop() {
 func output() {
 	for {
 		switch event := <-outputChan; event.EventType {
-		case common.HeartbeatEvent:
-			log.Info.Printf("Rcvd heartbeat: time (ns): %d, seqno: %d",
-				event.EventTime.UnixNano(), event.SeqNo)
 		case common.Query:
-			log.Info.Printf("Deadline established at time (ns): %d, seqno: %d, duration: %d",
-				event.EventTime.UnixNano(), event.SeqNo, event.FreshnessPoint.Sub(event.EventTime))
-		case common.FreshnessEvent:
-			log.Info.Printf("Freshness point: time (ns) %d",
-				event.EventTime.UnixNano())
+			log.Info.Printf("%s|%d|||%d||%d", event.EventType,
+				event.EventTime.UnixNano(), event.SeqNo,
+				event.FreshnessPoint.Sub(event.EventTime))
 		case common.Verdict:
-			log.Info.Printf("Suspect verdict: %t at time (ns) %d for seq no: %d",
-				event.Suspect, event.EventTime.UnixNano(), event.SeqNo)
+			log.Info.Printf("%s|%d|||%d|%t|", event.EventType,
+				event.EventTime.UnixNano(), event.SeqNo,
+				event.Suspect)
 		default:
 			log.Error.Println("Invalid event type encountered")
 		}
