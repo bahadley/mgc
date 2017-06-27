@@ -11,7 +11,7 @@ from mininet.node import Controller, OVSKernelAP
 from mininet.util import pmonitor
 
 OUTPUT_FILE = '/tmp/mgc.out'
-SYNC_START = 10
+SYNC_START = 3 
 EXPERIMENT_DURATION = 60 
 EXECUTABLE_PATH = '../../mgc'
 
@@ -51,7 +51,7 @@ def topology():
     net.mobility(sta3, 'stop', time=250, position='192,93,0')
     net.stopMobility(time=250)
 
-    sleep(10)
+    sleep(2)
 
     s1 = net.get('sta1')
     s2 = net.get('sta2')
