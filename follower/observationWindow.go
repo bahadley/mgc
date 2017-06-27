@@ -28,7 +28,6 @@ func manageObservations() {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not registered",
 					event.Src, event.SeqNo)
 			}
-			//outputChan <- event
 		// Leader will be sending a heartbeat now.  Calculate a deadline and
 		// create a shell record in the observation window.
 		case common.Query:
