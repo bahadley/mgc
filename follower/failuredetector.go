@@ -14,9 +14,10 @@ var (
 	// Leader is suspect if true, trusted if false
 	leaderSuspect bool
 
-	eventChan  chan *common.Event
-	reportChan chan *common.Event
-	outputChan chan *common.Event
+	eventChan   chan *common.Event
+	outputChan  chan *common.Event
+	reportChan  chan *common.Event
+	verdictChan chan *common.Event
 
 	wg sync.WaitGroup
 )
@@ -70,6 +71,16 @@ func controlLoop() {
 	}
 }
 
+func stateControl() {
+	for {
+		verdict := <-verdictChan
+		if leaderSuspect != verdict.Suspect {
+			leaderSuspect = verdict.Suspect
+			outputChan <- verdict
+		}
+	}
+}
+
 func output() {
 	for {
 		switch event := <-outputChan; event.EventType {
@@ -89,6 +100,7 @@ func output() {
 
 func init() {
 	eventChan = make(chan *common.Event, config.ChannelBufSz())
-	reportChan = make(chan *common.Event)
 	outputChan = make(chan *common.Event, config.ChannelBufSz())
+	reportChan = make(chan *common.Event)
+	verdictChan = make(chan *common.Event)
 }
