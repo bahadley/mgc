@@ -24,10 +24,11 @@ var (
 
 func RunFailureDetector() {
 	// Counting semaphore set to the number of threads.
-	wg.Add(4)
+	wg.Add(5)
 
 	go output()
 	go manageObservations()
+	go stateControl()
 	go controlLoop()
 	go net.Ingress(eventChan)
 
@@ -61,11 +62,6 @@ func controlLoop() {
 			EventType: common.FreshnessEvent,
 			EventTime: time.Now(),
 			SeqNo:     seqNo}
-
-		// Block waiting for trust/suspect verdict.
-		rptV := <-reportChan
-		leaderSuspect = rptV.Suspect
-		outputChan <- rptV
 
 		seqNo++
 	}

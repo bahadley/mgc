@@ -24,6 +24,11 @@ func manageObservations() {
 		// Heartbeat received from network interface.  Set the arrival time in
 		// matching shell record in the observation window
 		case common.HeartbeatEvent:
+			verdictChan <- &common.Event{
+				EventType: common.Verdict,
+				EventTime: event.EventTime,
+				SeqNo:     event.SeqNo,
+				Suspect:   false}
 			if !update(event.SeqNo, event.EventTime) {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not registered",
 					event.Src, event.SeqNo)
@@ -45,7 +50,7 @@ func manageObservations() {
 		// Deadline has expired.  Determine if a heartbeat has arrived for
 		// this period.
 		case common.FreshnessEvent:
-			reportChan <- &common.Event{
+			verdictChan <- &common.Event{
 				EventType: common.Verdict,
 				EventTime: time.Now(),
 				SeqNo:     event.SeqNo,
