@@ -24,14 +24,21 @@ func manageObservations() {
 		// Heartbeat received from network interface.  Set the arrival time in
 		// matching shell record in the observation window
 		case common.HeartbeatEvent:
-			verdictChan <- &common.Event{
-				EventType: common.Verdict,
-				EventTime: event.EventTime,
-				SeqNo:     event.SeqNo,
-				Suspect:   false}
-			if !update(event.SeqNo, event.EventTime) {
+			if updated, delay := update(event.SeqNo, event.EventTime); !updated {
 				log.Warning.Printf("Heartbeat from %s with seqNo %d not registered",
 					event.Src, event.SeqNo)
+			} else {
+				verdictChan <- &common.Event{
+					EventType: common.Verdict,
+					EventTime: event.EventTime,
+					SeqNo:     event.SeqNo,
+					Suspect:   false}
+				outputChan <- &common.Event{
+					EventType:      common.HeartbeatEvent,
+					EventTime:      event.EventTime,
+					SeqNo:          event.SeqNo,
+					Suspect:        false,
+					HeartbeatDelay: delay}
 			}
 		// Leader will be sending a heartbeat now.  Calculate a deadline and
 		// create a shell record in the observation window.
@@ -62,7 +69,7 @@ func manageObservations() {
 }
 
 func insert(tmp *common.Heartbeat) bool {
-	inserted := false
+	var inserted bool
 
 	for idx, hb := range hbWindow {
 		if inserted ||
@@ -84,8 +91,9 @@ func insert(tmp *common.Heartbeat) bool {
 	return inserted
 }
 
-func update(seqNo common.SeqNoType, arrivalTime time.Time) bool {
-	updated := false
+func update(seqNo common.SeqNoType, arrivalTime time.Time) (bool, time.Duration) {
+	var updated bool
+	var delay time.Duration
 
 	// Search for heartbeat with same sequence number.
 	for _, hb := range hbWindow {
@@ -93,11 +101,12 @@ func update(seqNo common.SeqNoType, arrivalTime time.Time) bool {
 			hb.ArrivalTime = arrivalTime
 			hb.TransDelay = arrivalTime.Sub(hb.SendTime)
 			updated = true
+			delay = hb.TransDelay
 			break
 		}
 	}
 
-	return updated
+	return updated, delay
 }
 
 func init() {

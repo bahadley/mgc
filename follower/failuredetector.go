@@ -53,9 +53,9 @@ func controlLoop() {
 
 		// Block waiting for deadline calc from observations.
 		rptF := <-reportChan
+		outputChan <- rptF
 		deadline := time.NewTimer(rptF.FreshnessPoint.Sub(time.Now()))
 		<-deadline.C
-		outputChan <- rptF
 
 		// Determine if heartbeat arrived.
 		eventChan <- &common.Event{
@@ -80,12 +80,16 @@ func stateControl() {
 func output() {
 	for {
 		switch event := <-outputChan; event.EventType {
+		case common.HeartbeatEvent:
+			log.Info.Printf("%s|%d|||%d|||%d", event.EventType,
+				event.EventTime.UnixNano(), event.SeqNo,
+				event.HeartbeatDelay)
 		case common.Query:
-			log.Info.Printf("%s|%d|||%d||%d", event.EventType,
+			log.Info.Printf("%s|%d|||%d||%d|", event.EventType,
 				event.EventTime.UnixNano(), event.SeqNo,
 				event.FreshnessPoint.Sub(event.EventTime))
 		case common.Verdict:
-			log.Info.Printf("%s|%d|||%d|%t|", event.EventType,
+			log.Info.Printf("%s|%d|||%d|%t||", event.EventType,
 				event.EventTime.UnixNano(), event.SeqNo,
 				event.Suspect)
 		default:

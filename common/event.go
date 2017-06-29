@@ -22,5 +22,6 @@ type (
 		SeqNo          SeqNoType
 		Suspect        bool
 		FreshnessPoint time.Time
+		HeartbeatDelay time.Duration
 	}
 )
