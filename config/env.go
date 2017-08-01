@@ -13,11 +13,11 @@ const (
 	defaultWindowSz = 4
 
 	// Duration in milliseconds of constant safety margin.
-	defaultSafetyMargin = 50
+	defaultSafetyMargin = 15
 
 	// Deadline duration for initial bootstraping of failure
 	// detection (i.e., no observations are available).
-	defaultDeadline = 500
+	defaultDeadline = 20
 )
 
 func TupleBufLen() uint32 {
