@@ -21,6 +21,7 @@ func (n *last) nextDeadline(t time.Time) time.Time {
 	for _, hb := range hbWindow {
 		if !(hb == nil || hb.ArrivalTime.IsZero()) {
 			lastDelay = hb.TransDelay
+			break
 		}
 	}
 
