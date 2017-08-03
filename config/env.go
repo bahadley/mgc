@@ -13,7 +13,7 @@ const (
 	defaultWindowSz = 4
 
 	// Duration in milliseconds of constant safety margin.
-	defaultSafetyMargin = 10
+	defaultSafetyMargin = 5
 
 	// Deadline duration for initial bootstraping of failure
 	// detection (i.e., no observations are available).
