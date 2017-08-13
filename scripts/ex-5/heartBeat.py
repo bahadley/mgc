@@ -12,7 +12,7 @@ from mininet.util import pmonitor
 
 OUTPUT_FILE = '/tmp/mgc.out'
 SYNC_START = 3 
-EXPERIMENT_DURATION = 60 
+EXPERIMENT_DURATION = 120 
 EXECUTABLE_PATH = '../../mgc'
 
 def topology():
